@@ -1158,7 +1158,7 @@
             });
         });
 
-        // Wheel scroll - push blocks
+        // Wheel scroll - push blocks + shuffle z-index
         document.addEventListener('wheel', (e) => {
             const force = e.deltaY * 0.03;
             blocksArray.forEach(block => {
@@ -1166,6 +1166,9 @@
                 if (!p.isDragging) {
                     p.vx += (Math.random() - 0.5) * Math.abs(force) * 2;
                     p.vy += force * (0.5 + Math.random() * 0.5);
+
+                    // Shuffle z-index on scroll
+                    block.style.zIndex = Math.floor(Math.random() * 500) + 1;
                 }
             });
         }, { passive: true });
