@@ -106,15 +106,15 @@
             background: rgba(20, 40, 80, 0.15);
             border: 1px solid rgba(100, 150, 200, 0.1);
             border-radius: 4px;
-            padding: 10px 12px;
-            max-width: 320px;
+            padding: 8px 10px;
+            max-width: 240px;
             word-wrap: break-word;
             box-shadow: 0 2px 10px rgba(0, 0, 0, 0.3);
             user-select: none;
             transition: box-shadow 0.2s ease;
 
-            /* Smooth floating only - no pulse, very gentle */
-            animation: iceFloat var(--float-duration, 12s) ease-in-out infinite;
+            /* Smooth floating - more noticeable drift */
+            animation: iceFloat var(--float-duration, 10s) ease-in-out infinite;
             animation-delay: var(--float-delay, 0s);
         }
 
@@ -122,15 +122,19 @@
 
             0%,
             100% {
-                transform: translate(0, 0);
+                transform: translate(0, 0) rotate(0deg);
             }
 
-            33% {
-                transform: translate(var(--drift-x, 4px), var(--drift-y, -6px));
+            25% {
+                transform: translate(var(--drift-x, 15px), var(--drift-y, -20px)) rotate(0.5deg);
             }
 
-            66% {
-                transform: translate(calc(var(--drift-x, 4px) * -0.5), calc(var(--drift-y, -6px) * 0.7));
+            50% {
+                transform: translate(calc(var(--drift-x, 15px) * -0.7), calc(var(--drift-y, -20px) * 0.5)) rotate(-0.3deg);
+            }
+
+            75% {
+                transform: translate(calc(var(--drift-x, 15px) * 0.5), calc(var(--drift-y, -20px) * -0.8)) rotate(0.2deg);
             }
         }
 
@@ -147,7 +151,7 @@
 
         /* ========== CONTENT STYLING ========== */
         .memory-block img {
-            max-width: 100%;
+            max-width: 200px;
             height: auto;
             display: block;
             border-radius: 2px;
@@ -157,8 +161,8 @@
         }
 
         .memory-text {
-            font-size: 13px;
-            line-height: 1.6;
+            font-size: 11px;
+            line-height: 1.5;
             color: rgba(200, 230, 255, 0.9);
             white-space: pre-wrap;
             /* Frozen text glow */
@@ -166,13 +170,60 @@
         }
 
         .timestamp {
-            font-size: 10px;
+            font-size: 9px;
             color: rgba(150, 180, 220, 0.6);
-            margin-bottom: 10px;
+            margin-bottom: 6px;
             display: block;
             font-weight: 300;
             letter-spacing: 1px;
             text-transform: uppercase;
+        }
+
+        /* ========== MOBILE OPTIMIZATION ========== */
+        @media (max-width: 768px) {
+            .memory-block {
+                max-width: 160px;
+                padding: 6px 8px;
+                background: rgba(20, 40, 80, 0.35);
+            }
+
+            .memory-text {
+                font-size: 10px;
+                line-height: 1.3;
+            }
+
+            .memory-block img {
+                max-width: 140px;
+            }
+
+            .timestamp {
+                font-size: 7px;
+                margin-bottom: 4px;
+            }
+
+            .video-bg {
+                opacity: 0.25;
+            }
+
+            .caustics {
+                opacity: 0.2;
+            }
+        }
+
+        /* Extra small screens (phones) */
+        @media (max-width: 480px) {
+            .memory-block {
+                max-width: 140px;
+                padding: 5px 6px;
+            }
+
+            .memory-text {
+                font-size: 9px;
+            }
+
+            .memory-block img {
+                max-width: 120px;
+            }
         }
     </style>
 </head>
@@ -189,149 +240,112 @@
 
     <div id="canvas">
 
-        <div class="memory-block" style="top: 45%; left: 39%;" id="mem-91">
-            <span class="timestamp">18.12.2025 13:11:45 UTC+10:00</span>
-            
-            <img src="photos/new_91.jpg" alt="memory" loading="lazy">
-        </div>
-        <div class="memory-block" style="top: 87%; left: 89%;" id="mem-92">
-            <span class="timestamp">18.12.2025 13:11:46 UTC+10:00</span>
-            
-            <img src="photos/new_92.jpg" alt="memory" loading="lazy">
-        </div>
-        <div class="memory-block" style="top: 61%; left: 5%;" id="mem-93">
-            <span class="timestamp">18.12.2025 13:11:46 UTC+10:00</span>
-            
-            <img src="photos/new_93.jpg" alt="memory" loading="lazy">
-        </div>
-        <div class="memory-block" style="top: 15%; left: 59%;" id="mem-94">
-            <span class="timestamp">18.12.2025 13:11:46 UTC+10:00</span>
-            
-            <img src="photos/new_94.jpg" alt="memory" loading="lazy">
-        </div>
-        <div class="memory-block" style="top: 44%; left: 62%;" id="mem-95">
-            <span class="timestamp">18.12.2025 13:11:46 UTC+10:00</span>
-            
-            <img src="photos/new_95.jpg" alt="memory" loading="lazy">
-        </div>
-        <div class="memory-block" style="top: 87%; left: 8%;" id="mem-96">
-            <span class="timestamp">18.12.2025 13:11:46 UTC+10:00</span>
-            
-            <img src="photos/new_96.jpg" alt="memory" loading="lazy">
-        </div>
-        <div class="memory-block" style="top: 80%; left: 85%;" id="mem-97">
-            <span class="timestamp">18.12.2025 13:11:46 UTC+10:00</span>
-            
-            <img src="photos/new_97.jpg" alt="memory" loading="lazy">
-        </div>
-        <div class="memory-block" style="top: 60%; left: 44%;" id="mem-98">
-            <span class="timestamp">18.12.2025 13:11:46 UTC+10:00</span>
-            
-            <img src="photos/new_98.jpg" alt="memory" loading="lazy">
-        </div>
-
-        <div class="memory-block" style="top: 31%; left: 25%;" id="mem-80">
+        <div class="memory-block" style="top: 9%; left: 90%;" id="mem-80">
             <span class="timestamp">16.12.2025 15:37:22 UTC+10:00</span>
-            <div class="memory-text">неприятно осознавать бессмысленность того что слышишь, хуже — не понимать причину этой бессмысленности
-в диалоге с человеком
-понимаешь — что-то не сходится, а что именно —не ясно.
-это
-паралогизм
-.
-с грек παραλογισμός — ложный вывод. когда человек искренне верит что прав. но где-то в цепочке рассуждений есть баг.
-все равно что изменять кривую прямым инструментом, или наоборот.
-измерение есть, результат мимо.
-главное - человек делает это не специально, он реально думает что всё логично.
-возможно, что не хватает знаний, времени или внимания.
-все мы - периодически так делаем. но замечаем ли это?
-не делаем ли этого специально?
-🙃
-об этом следующий пост.</div>
-            
+            <div class="memory-text">неприятно осознавать бессмысленность того что слышишь, хуже — не понимать причину
+                этой бессмысленности
+                в диалоге с человеком
+                понимаешь — что-то не сходится, а что именно —не ясно.
+                это
+                паралогизм
+                .
+                с грек παραλογισμός — ложный вывод. когда человек искренне верит что прав. но где-то в цепочке
+                рассуждений есть баг.
+                все равно что изменять кривую прямым инструментом, или наоборот.
+                измерение есть, результат мимо.
+                главное - человек делает это не специально, он реально думает что всё логично.
+                возможно, что не хватает знаний, времени или внимания.
+                все мы - периодически так делаем. но замечаем ли это?
+                не делаем ли этого специально?
+                🙃
+                об этом следующий пост.</div>
+
         </div>
-        <div class="memory-block" style="top: 51%; left: 10%;" id="mem-81">
+        <div class="memory-block" style="top: 81%; left: 79%;" id="mem-81">
             <span class="timestamp">17.12.2025 19:11:21 UTC+10:00</span>
-            <div class="memory-text">что если я, заранее понимая, что структура моей логики неверная — продолжаю убеждать человека в своей правоте?🐢
-в таком случае цель коммуникации — победа, а не попытка разобраться в реальном  отношении вещей.
-и больше это похоже на соревнование.
-> всё, что ты не потерял — ты имеешь.
-> ты не потерял рога.
-> значит, у тебя есть рога.
-логично?
-подмена в слове "иметь".
-в первом случае — "обладать чем-то".
-во втором — "физически носить на голове".
-тут два смысла склеены в один.
-> мужчина — человек.
-> женщина — не мужчина.
-> значит, женщина — не человек.
-"человек" в первой строке — категория.
-во второй — синоним мужчины.
-подмена внутри одного слова.
-> "9 из 10 стоматологов рекомендуют"
-каких стоматологов? откуда данные?
--не важно, ведь звучит убедительно.
-> "все успешные люди встают в 5 утра"
-как будто между сном и успехом прямая связь.
-на самом деле: нет.
-навыки софистики применимы в юриспруденции, маркетинге, политике и не только, но фактически являются манипуляцией, подменой понятий, типа: "не баг,а фича".
-итак:
-паралогизм — случайный баг. человек верит — что прав.
-софизм — взлом и манипуляция, способ  достижения цели.
-разница — в намерении и роли прибегающего к таким уловкам человека.</div>
-            
+            <div class="memory-text">что если я, заранее понимая, что структура моей логики неверная — продолжаю
+                убеждать человека в своей правоте?🐢
+                в таком случае цель коммуникации — победа, а не попытка разобраться в реальном отношении вещей.
+                и больше это похоже на соревнование.
+                > всё, что ты не потерял — ты имеешь.
+                > ты не потерял рога.
+                > значит, у тебя есть рога.
+                логично?
+                подмена в слове "иметь".
+                в первом случае — "обладать чем-то".
+                во втором — "физически носить на голове".
+                тут два смысла склеены в один.
+                > мужчина — человек.
+                > женщина — не мужчина.
+                > значит, женщина — не человек.
+                "человек" в первой строке — категория.
+                во второй — синоним мужчины.
+                подмена внутри одного слова.
+                > "9 из 10 стоматологов рекомендуют"
+                каких стоматологов? откуда данные?
+                -не важно, ведь звучит убедительно.
+                > "все успешные люди встают в 5 утра"
+                как будто между сном и успехом прямая связь.
+                на самом деле: нет.
+                навыки софистики применимы в юриспруденции, маркетинге, политике и не только, но фактически являются
+                манипуляцией, подменой понятий, типа: "не баг,а фича".
+                итак:
+                паралогизм — случайный баг. человек верит — что прав.
+                софизм — взлом и манипуляция, способ достижения цели.
+                разница — в намерении и роли прибегающего к таким уловкам человека.</div>
+
         </div>
-        <div class="memory-block" style="top: 61%; left: 82%;" id="mem-82">
+        <div class="memory-block" style="top: 55%; left: 63%;" id="mem-82">
             <span class="timestamp">18.12.2025 13:11:45 UTC+10:00</span>
             <div class="memory-text">не надо туда лезть.
-вы молодые, вам всё легко.
-это не чикатило и не архивы спецслужб.
-это другое.
-серьёзно — любой из вас пожалеет.
-закройте и забудьте.
-понимаю, что этим только разогреваю интерес.
-но пытливым говорю — стоп.
-остальных просто не найдут.</div>
+                вы молодые, вам всё легко.
+                это не чикатило и не архивы спецслужб.
+                это другое.
+                серьёзно — любой из вас пожалеет.
+                закройте и забудьте.
+                понимаю, что этим только разогреваю интерес.
+                но пытливым говорю — стоп.
+                остальных просто не найдут.</div>
             <img src="photos/new_82.jpg" alt="memory" loading="lazy">
         </div>
-        <div class="memory-block" style="top: 39%; left: 70%;" id="mem-83">
+        <div class="memory-block" style="top: 7%; left: 55%;" id="mem-83">
             <span class="timestamp">18.12.2025 13:11:45 UTC+10:00</span>
-            
+
             <img src="photos/new_83.jpg" alt="memory" loading="lazy">
         </div>
-        <div class="memory-block" style="top: 7%; left: 63%;" id="mem-84">
+        <div class="memory-block" style="top: 39%; left: 48%;" id="mem-84">
             <span class="timestamp">18.12.2025 13:11:46 UTC+10:00</span>
-            
+
             <img src="photos/new_84.jpg" alt="memory" loading="lazy">
         </div>
-        <div class="memory-block" style="top: 29%; left: 63%;" id="mem-85">
+        <div class="memory-block" style="top: 77%; left: 47%;" id="mem-85">
             <span class="timestamp">18.12.2025 13:11:46 UTC+10:00</span>
-            
+
             <img src="photos/new_85.jpg" alt="memory" loading="lazy">
         </div>
-        <div class="memory-block" style="top: 35%; left: 38%;" id="mem-86">
+        <div class="memory-block" style="top: 70%; left: 34%;" id="mem-86">
             <span class="timestamp">18.12.2025 13:11:46 UTC+10:00</span>
-            
+
             <img src="photos/new_86.jpg" alt="memory" loading="lazy">
         </div>
-        <div class="memory-block" style="top: 83%; left: 74%;" id="mem-87">
+        <div class="memory-block" style="top: 28%; left: 36%;" id="mem-87">
             <span class="timestamp">18.12.2025 13:11:46 UTC+10:00</span>
-            
+
             <img src="photos/new_87.jpg" alt="memory" loading="lazy">
         </div>
-        <div class="memory-block" style="top: 23%; left: 51%;" id="mem-88">
+        <div class="memory-block" style="top: 73%; left: 27%;" id="mem-88">
             <span class="timestamp">18.12.2025 13:11:46 UTC+10:00</span>
-            
+
             <img src="photos/new_88.jpg" alt="memory" loading="lazy">
         </div>
-        <div class="memory-block" style="top: 85%; left: 70%;" id="mem-89">
+        <div class="memory-block" style="top: 22%; left: 17%;" id="mem-89">
             <span class="timestamp">18.12.2025 13:11:46 UTC+10:00</span>
-            
+
             <img src="photos/new_89.jpg" alt="memory" loading="lazy">
         </div>
-        <div class="memory-block" style="top: 48%; left: 18%;" id="mem-90">
+        <div class="memory-block" style="top: 16%; left: 54%;" id="mem-90">
             <span class="timestamp">18.12.2025 13:11:46 UTC+10:00</span>
-            
+
             <img src="photos/new_90.jpg" alt="memory" loading="lazy">
         </div>
 
