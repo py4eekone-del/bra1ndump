@@ -179,21 +179,33 @@
             text-transform: uppercase;
         }
 
-        /* ========== MOBILE OPTIMIZATION ========== */
+        /* ========== MOBILE OPTIMIZATION - PERFORMANCE FOCUS ========== */
         @media (max-width: 768px) {
+
+            /* GPU acceleration */
             .memory-block {
-                max-width: 160px;
+                max-width: 150px;
                 padding: 6px 8px;
-                background: rgba(20, 40, 80, 0.35);
+                background: rgba(20, 40, 80, 0.4);
+                /* GPU acceleration */
+                will-change: transform;
+                transform: translate3d(0, 0, 0);
+                /* Disable animation on mobile for performance */
+                animation: none !important;
+                /* No shadows for perf */
+                box-shadow: none;
+                border: 1px solid rgba(100, 150, 200, 0.2);
             }
 
             .memory-text {
                 font-size: 10px;
                 line-height: 1.3;
+                text-shadow: none;
             }
 
             .memory-block img {
-                max-width: 140px;
+                max-width: 130px;
+                filter: none;
             }
 
             .timestamp {
@@ -201,20 +213,32 @@
                 margin-bottom: 4px;
             }
 
+            /* Disable heavy effects */
             .video-bg {
-                opacity: 0.25;
+                display: none !important;
             }
 
             .caustics {
-                opacity: 0.2;
+                display: none !important;
+            }
+
+            body {
+                /* Prevent iOS scroll bounce */
+                overscroll-behavior: none;
+                touch-action: manipulation;
+            }
+
+            #canvas {
+                touch-action: pan-x pan-y;
             }
         }
 
         /* Extra small screens (phones) */
         @media (max-width: 480px) {
             .memory-block {
-                max-width: 140px;
-                padding: 5px 6px;
+                max-width: 130px;
+                padding: 4px 6px;
+                font-size: 9px;
             }
 
             .memory-text {
@@ -222,7 +246,7 @@
             }
 
             .memory-block img {
-                max-width: 120px;
+                max-width: 110px;
             }
         }
     </style>
@@ -1262,12 +1286,15 @@
             Telegram.WebApp.expand();
         }
 
+        // Mobile detection
+        const isMobile = window.innerWidth <= 768 || 'ontouchstart' in window;
+
         const blocks = document.querySelectorAll('.memory-block');
         const blocksArray = Array.from(blocks);
         const physics = new Map();
         let maxZ = 1000;
 
-        // Initialize
+        // Initialize blocks
         blocksArray.forEach((block, i) => {
             const rect = block.getBoundingClientRect();
 
@@ -1286,223 +1313,169 @@
             });
         });
 
-        // Wheel scroll - push blocks + shuffle z-index
-        document.addEventListener('wheel', (e) => {
-            const force = e.deltaY * 0.015; // Smoother
-            blocksArray.forEach(block => {
-                const p = physics.get(block);
-                if (!p.isDragging) {
-                    p.vx += (Math.random() - 0.5) * Math.abs(force) * 1.5;
-                    p.vy += force * (0.4 + Math.random() * 0.4);
+        // MOBILE: Simple scrollable layout - make canvas scrollable
+        if (isMobile) {
+            const canvas = document.getElementById('canvas');
+            document.body.style.overflow = 'auto';
+            document.body.style.height = 'auto';
+            canvas.style.height = 'auto';
+            canvas.style.minHeight = '200vh';
+            canvas.style.position = 'relative';
 
-                    // Shuffle z-index on scroll
-                    block.style.zIndex = Math.floor(Math.random() * 500) + 1;
-                }
-            });
-        }, { passive: true });
-
-        // Physics loop
-        function tick() {
-            const w = window.innerWidth;
-            const h = window.innerHeight;
-
-            blocksArray.forEach(block => {
-                const p = physics.get(block);
-
-                // Skip if dragging
-                if (p.isDragging) return;
-
-                // Skip if not moving
-                if (Math.abs(p.vx) < 0.05 && Math.abs(p.vy) < 0.05) return;
-
-                p.x += p.vx;
-                p.y += p.vy;
-
-                // Bounce
-                const rect = block.getBoundingClientRect();
-                if (p.x < 0) { p.x = 0; p.vx *= -0.5; }
-                if (p.x + rect.width > w) { p.x = w - rect.width; p.vx *= -0.5; }
-                if (p.y < 0) { p.y = 0; p.vy *= -0.5; }
-                if (p.y + rect.height > h) { p.y = h - rect.height; p.vy *= -0.5; }
-
-                block.style.left = p.x + 'px';
-                block.style.top = p.y + 'px';
-
-                // Friction
-                p.vx *= 0.97;
-                p.vy *= 0.97;
+            // Convert blocks to flow layout on mobile
+            blocksArray.forEach((block, i) => {
+                block.style.position = 'relative';
+                block.style.display = 'inline-block';
+                block.style.margin = '8px';
+                block.style.left = 'auto';
+                block.style.top = 'auto';
+                block.style.verticalAlign = 'top';
             });
 
-            requestAnimationFrame(tick);
+            // Simple tap to bring to front
+            blocksArray.forEach(block => {
+                block.addEventListener('click', () => {
+                    maxZ++;
+                    block.style.zIndex = maxZ;
+                });
+            });
         }
-        tick();
 
-        // Mouse drag
-        blocks.forEach(elm => {
-            elm.onmousedown = function (e) {
-                e.preventDefault();
-
-                const p = physics.get(elm);
-                p.isDragging = true;
-                p.vx = 0;
-                p.vy = 0;
-
-                maxZ++;
-                elm.style.zIndex = maxZ;
-                elm.classList.add('dragging');
-
-                const startX = e.clientX;
-                const startY = e.clientY;
-                const startLeft = p.x;
-                const startTop = p.y;
-
-                function onMove(ev) {
-                    const dx = ev.clientX - startX;
-                    const dy = ev.clientY - startY;
-                    p.x = startLeft + dx;
-                    p.y = startTop + dy;
-                    elm.style.left = p.x + 'px';
-                    elm.style.top = p.y + 'px';
-                }
-
-                function onUp() {
-                    p.isDragging = false;
-                    elm.classList.remove('dragging');
-                    document.removeEventListener('mousemove', onMove);
-                    document.removeEventListener('mouseup', onUp);
-                }
-
-                document.addEventListener('mousemove', onMove);
-                document.addEventListener('mouseup', onUp);
-            };
-
-            // Touch drag
-            elm.ontouchstart = function (e) {
-                e.preventDefault();
-
-                const p = physics.get(elm);
-                p.isDragging = true;
-                p.vx = 0;
-                p.vy = 0;
-
-                maxZ++;
-                elm.style.zIndex = maxZ;
-                elm.classList.add('dragging');
-
-                const touch = e.touches[0];
-                const startX = touch.clientX;
-                const startY = touch.clientY;
-                const startLeft = p.x;
-                const startTop = p.y;
-
-                function onMove(ev) {
-                    const t = ev.touches[0];
-                    const dx = t.clientX - startX;
-                    const dy = t.clientY - startY;
-                    p.x = startLeft + dx;
-                    p.y = startTop + dy;
-                    elm.style.left = p.x + 'px';
-                    elm.style.top = p.y + 'px';
-                }
-
-                function onEnd() {
-                    p.isDragging = false;
-                    elm.classList.remove('dragging');
-                    document.removeEventListener('touchmove', onMove);
-                    document.removeEventListener('touchend', onEnd);
-                }
-
-                document.addEventListener('touchmove', onMove, { passive: false });
-                document.addEventListener('touchend', onEnd);
-            };
-
-            elm.ondragstart = () => false;
-        });
-
-        // ========== PINCH TO ZOOM (Mobile) ==========
-        let currentScale = 1;
-        let initialDistance = 0;
-        let initialScale = 1;
-        const canvas = document.getElementById('canvas');
-
-        // Two-finger pinch zoom
-        canvas.addEventListener('touchstart', function (e) {
-            if (e.touches.length === 2) {
-                e.preventDefault();
-                initialDistance = Math.hypot(
-                    e.touches[0].clientX - e.touches[1].clientX,
-                    e.touches[0].clientY - e.touches[1].clientY
-                );
-                initialScale = currentScale;
-            }
-        }, { passive: false });
-
-        canvas.addEventListener('touchmove', function (e) {
-            if (e.touches.length === 2) {
-                e.preventDefault();
-                const currentDistance = Math.hypot(
-                    e.touches[0].clientX - e.touches[1].clientX,
-                    e.touches[0].clientY - e.touches[1].clientY
-                );
-
-                const scaleChange = currentDistance / initialDistance;
-                currentScale = Math.min(2, Math.max(0.3, initialScale * scaleChange));
-                canvas.style.transform = `scale(${currentScale})`;
-                canvas.style.transformOrigin = 'center center';
-            }
-        }, { passive: false });
-
-        // Double-tap to reset zoom
-        let lastTap = 0;
-        canvas.addEventListener('touchend', function (e) {
-            const now = Date.now();
-            if (now - lastTap < 300 && e.touches.length === 0) {
-                currentScale = 1;
-                canvas.style.transform = 'scale(1)';
-            }
-            lastTap = now;
-        });
-
-        // ========== SWIPE TO PUSH BLOCKS (single finger on empty area) ==========
-        let swipeStartX = 0;
-        let swipeStartY = 0;
-        let isSwiping = false;
-
-        document.addEventListener('touchstart', function (e) {
-            // Only if touching outside blocks
-            if (e.target.closest('.memory-block')) return;
-            if (e.touches.length !== 1) return;
-
-            swipeStartX = e.touches[0].clientX;
-            swipeStartY = e.touches[0].clientY;
-            isSwiping = true;
-        }, { passive: true });
-
-        document.addEventListener('touchmove', function (e) {
-            if (!isSwiping || e.touches.length !== 1) return;
-
-            const dx = e.touches[0].clientX - swipeStartX;
-            const dy = e.touches[0].clientY - swipeStartY;
-            const distance = Math.sqrt(dx * dx + dy * dy);
-
-            // Only trigger if swiped more than 30px
-            if (distance > 30) {
-                const force = distance * 0.05;
+        // DESKTOP ONLY: Wheel scroll + physics
+        if (!isMobile) {
+            // Wheel scroll - push blocks + shuffle z-index
+            document.addEventListener('wheel', (e) => {
+                const force = e.deltaY * 0.015; // Smoother
                 blocksArray.forEach(block => {
                     const p = physics.get(block);
                     if (!p.isDragging) {
-                        p.vx += (dx / distance) * force * (0.5 + Math.random());
-                        p.vy += (dy / distance) * force * (0.5 + Math.random());
+                        p.vx += (Math.random() - 0.5) * Math.abs(force) * 1.5;
+                        p.vy += force * (0.4 + Math.random() * 0.4);
+
+                        // Shuffle z-index on scroll
+                        block.style.zIndex = Math.floor(Math.random() * 500) + 1;
                     }
                 });
-                swipeStartX = e.touches[0].clientX;
-                swipeStartY = e.touches[0].clientY;
-            }
-        }, { passive: true });
+            }, { passive: true });
 
-        document.addEventListener('touchend', function () {
-            isSwiping = false;
-        });
+            // Physics loop
+            function tick() {
+                const w = window.innerWidth;
+                const h = window.innerHeight;
+
+                blocksArray.forEach(block => {
+                    const p = physics.get(block);
+
+                    // Skip if dragging
+                    if (p.isDragging) return;
+
+                    // Skip if not moving
+                    if (Math.abs(p.vx) < 0.05 && Math.abs(p.vy) < 0.05) return;
+
+                    p.x += p.vx;
+                    p.y += p.vy;
+
+                    // Bounce
+                    const rect = block.getBoundingClientRect();
+                    if (p.x < 0) { p.x = 0; p.vx *= -0.5; }
+                    if (p.x + rect.width > w) { p.x = w - rect.width; p.vx *= -0.5; }
+                    if (p.y < 0) { p.y = 0; p.vy *= -0.5; }
+                    if (p.y + rect.height > h) { p.y = h - rect.height; p.vy *= -0.5; }
+
+                    block.style.left = p.x + 'px';
+                    block.style.top = p.y + 'px';
+
+                    // Friction
+                    p.vx *= 0.97;
+                    p.vy *= 0.97;
+                });
+
+                requestAnimationFrame(tick);
+            }
+            tick();
+
+            // Mouse drag
+            blocks.forEach(elm => {
+                elm.onmousedown = function (e) {
+                    e.preventDefault();
+
+                    const p = physics.get(elm);
+                    p.isDragging = true;
+                    p.vx = 0;
+                    p.vy = 0;
+
+                    maxZ++;
+                    elm.style.zIndex = maxZ;
+                    elm.classList.add('dragging');
+
+                    const startX = e.clientX;
+                    const startY = e.clientY;
+                    const startLeft = p.x;
+                    const startTop = p.y;
+
+                    function onMove(ev) {
+                        const dx = ev.clientX - startX;
+                        const dy = ev.clientY - startY;
+                        p.x = startLeft + dx;
+                        p.y = startTop + dy;
+                        elm.style.left = p.x + 'px';
+                        elm.style.top = p.y + 'px';
+                    }
+
+                    function onUp() {
+                        p.isDragging = false;
+                        elm.classList.remove('dragging');
+                        document.removeEventListener('mousemove', onMove);
+                        document.removeEventListener('mouseup', onUp);
+                    }
+
+                    document.addEventListener('mousemove', onMove);
+                    document.addEventListener('mouseup', onUp);
+                };
+
+                // Touch drag
+                elm.ontouchstart = function (e) {
+                    e.preventDefault();
+
+                    const p = physics.get(elm);
+                    p.isDragging = true;
+                    p.vx = 0;
+                    p.vy = 0;
+
+                    maxZ++;
+                    elm.style.zIndex = maxZ;
+                    elm.classList.add('dragging');
+
+                    const touch = e.touches[0];
+                    const startX = touch.clientX;
+                    const startY = touch.clientY;
+                    const startLeft = p.x;
+                    const startTop = p.y;
+
+                    function onMove(ev) {
+                        const t = ev.touches[0];
+                        const dx = t.clientX - startX;
+                        const dy = t.clientY - startY;
+                        p.x = startLeft + dx;
+                        p.y = startTop + dy;
+                        elm.style.left = p.x + 'px';
+                        elm.style.top = p.y + 'px';
+                    }
+
+                    function onEnd() {
+                        p.isDragging = false;
+                        elm.classList.remove('dragging');
+                        document.removeEventListener('touchmove', onMove);
+                        document.removeEventListener('touchend', onEnd);
+                    }
+
+                    document.addEventListener('touchmove', onMove, { passive: false });
+                    document.addEventListener('touchend', onEnd);
+                };
+
+                elm.ondragstart = () => false;
+            });
+        } // End of if (!isMobile)
     </script>
 </body>
 
