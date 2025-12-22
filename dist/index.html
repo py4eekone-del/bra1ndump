@@ -9,98 +9,46 @@
     <style>
         @import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@300;400;500&display=swap');
         
-        * {
-            box-sizing: border-box;
-            margin: 0;
-            padding: 0;
-        }
+        * { box-sizing: border-box; margin: 0; padding: 0; }
         
-        /* ========== BACKGROUND: Deep Ocean + Warm Caustics ========== */
         body {
-            background: linear-gradient(
-                180deg,
-                #020615 0%,      /* Almost black top */
-                #0a1628 30%,     /* Deep navy */
-                #0d2847 60%,     /* Cold blue */
-                #0a1e3a 100%     /* Deep indigo */
-            );
+            background: linear-gradient(180deg, #020615 0%, #0a1628 30%, #0d2847 60%, #0a1e3a 100%);
             font-family: 'JetBrains Mono', 'Courier New', monospace;
             overflow: hidden;
-            margin: 0;
-            padding: 0;
-            width: 100vw;
-            height: 100vh;
-            position: relative;
+            width: 100vw; height: 100vh; position: relative;
         }
 
-        /* ========== VIDEO BACKGROUND ========== */
         .video-bg {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            object-fit: cover;
-            z-index: 0;
-            opacity: 0.35;
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            object-fit: cover; z-index: 0; opacity: 0.35;
             transform: scaleY(-1);
             filter: saturate(0.7) contrast(1.1) hue-rotate(-10deg);
             pointer-events: none;
         }
 
-        /* ========== CAUSTIC LIGHT LAYER (Warm highlights over video) ========== */
         .caustics {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            pointer-events: none;
-            z-index: 1;
-            opacity: 0.3;
-            background: 
-                radial-gradient(ellipse 80% 50% at 20% 30%, rgba(255, 180, 100, 0.2) 0%, transparent 50%),
-                radial-gradient(ellipse 60% 40% at 70% 60%, rgba(255, 200, 150, 0.15) 0%, transparent 45%),
-                radial-gradient(ellipse 40% 30% at 50% 80%, rgba(200, 220, 255, 0.1) 0%, transparent 40%),
-                radial-gradient(ellipse 50% 50% at 80% 20%, rgba(255, 150, 80, 0.1) 0%, transparent 50%);
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            pointer-events: none; z-index: 1; opacity: 0.3;
+            background: radial-gradient(ellipse 80% 50% at 20% 30%, rgba(255, 180, 100, 0.2) 0%, transparent 50%),
+                        radial-gradient(ellipse 60% 40% at 70% 60%, rgba(255, 200, 150, 0.15) 0%, transparent 45%);
             animation: causticDrift 15s ease-in-out infinite alternate;
             mix-blend-mode: screen;
         }
         
         @keyframes causticDrift {
-            0% {
-                transform: translate(0, 0) scale(1);
-                filter: blur(30px);
-            }
-            50% {
-                transform: translate(3%, -2%) scale(1.05);
-                filter: blur(40px);
-            }
-            100% {
-                transform: translate(-2%, 3%) scale(0.98);
-                filter: blur(35px);
-            }
+            0% { transform: translate(0, 0) scale(1); filter: blur(30px); }
+            100% { transform: translate(-2%, 3%) scale(0.98); filter: blur(35px); }
         }
 
-        /* ========== CANVAS ========== */
-        #canvas {
-            position: relative;
-            width: 100%;
-            height: 100%;
-            z-index: 1;
-        }
+        #canvas { position: relative; width: 100%; height: 100%; z-index: 1; }
 
-        /* ========== MEMORY BLOCKS ========== */
         .memory-block {
             position: absolute;
             background: rgba(100, 150, 200, 0.05);
             backdrop-filter: blur(4px);
             -webkit-backdrop-filter: blur(4px);
-            border: none;
-            border-radius: 2px;
-            padding: 8px 10px;
+            border-radius: 2px; padding: 8px 10px;
             max-width: 240px;
-            word-wrap: break-word;
             box-shadow: 0 4px 20px rgba(0, 0, 0, 0.2);
             user-select: none;
             animation: iceFloat var(--float-duration, 10s) ease-in-out infinite;
@@ -109,136 +57,63 @@
 
         @keyframes iceFloat {
             0%, 100% { transform: translate(0, 0) rotate(0deg); }
-            25% { transform: translate(var(--drift-x, 15px), var(--drift-y, -20px)) rotate(0.5deg); }
             50% { transform: translate(calc(var(--drift-x, 15px) * -0.7), calc(var(--drift-y, -20px) * 0.5)) rotate(-0.3deg); }
-            75% { transform: translate(calc(var(--drift-x, 15px) * 0.5), calc(var(--drift-y, -20px) * -0.8)) rotate(0.2deg); }
         }
 
         .memory-block:hover {
-            z-index: 9999 !important;
-            cursor: grab;
-            animation-play-state: paused;
-            box-shadow: 
-                0 0 20px rgba(100, 200, 255, 0.3),
-                0 0 40px rgba(100, 200, 255, 0.15),
-                0 8px 32px rgba(0, 0, 0, 0.5);
+            z-index: 9999 !important; cursor: grab; animation-play-state: paused;
+            box-shadow: 0 0 20px rgba(100, 200, 255, 0.3), 0 8px 32px rgba(0, 0, 0, 0.5);
         }
         
-        .memory-block.dragging {
-            cursor: grabbing;
-            animation-play-state: paused;
-            transform: scale(1.03) !important;
-            box-shadow: 
-                0 0 30px rgba(100, 200, 255, 0.4),
-                0 0 60px rgba(100, 200, 255, 0.2);
-        }
+        .memory-block.dragging { cursor: grabbing; animation-play-state: paused; transform: scale(1.03) !important; }
 
-        /* ========== CONTENT STYLING ========== */
-        .memory-block img {
-            max-width: 200px;
-            height: auto;
-            display: block;
-            border-radius: 2px;
-            pointer-events: none;
-            filter: saturate(0.85) contrast(1.05);
-        }
-        
-        .memory-text {
-            font-size: 11px;
-            line-height: 1.5;
-            color: rgba(200, 230, 255, 0.9);
-            white-space: pre-wrap;
-            text-shadow: 0 0 8px rgba(100, 200, 255, 0.3);
-        }
+        .memory-block img { max-width: 200px; height: auto; display: block; filter: saturate(0.85) contrast(1.05); }
+        .memory-text { font-size: 11px; line-height: 1.5; color: rgba(200, 230, 255, 0.9); }
+        .timestamp { font-size: 9px; color: rgba(150, 180, 220, 0.6); margin-bottom: 6px; display: block; text-transform: uppercase; }
 
-        .timestamp {
-            font-size: 9px;
-            color: rgba(150, 180, 220, 0.6);
-            margin-bottom: 6px;
-            display: block;
-            font-weight: 300;
-            letter-spacing: 1px;
-            text-transform: uppercase;
-        }
-
-        /* ========== MOBILE OPTIMIZATION ========== */
         @media (max-width: 768px) {
-            .memory-block {
-                max-width: 160px;
-                padding: 6px 8px;
-                background: rgba(20, 40, 80, 0.35);
-                backdrop-filter: blur(6px);
-            }
-            .memory-text { font-size: 10px; line-height: 1.3; }
-            .memory-block img { max-width: 140px; }
-            .timestamp { font-size: 7px; margin-bottom: 4px; }
             .video-bg { opacity: 0.25; }
-            .caustics { opacity: 0.2; }
+            #canvas { display: flex; flex-wrap: wrap; padding: 10px; min-height: 100vh; overflow-y: auto; }
             
-            #canvas {
-                display: flex;
-                flex-wrap: wrap;
-                padding: 10px;
-                min-height: 100vh;
-            }
-            
-            .memory-block:nth-child(-n+25),
-            .memory-block:nth-last-child(-n+25) {
-                display: block !important;
+            /* Show ALL blocks in a grid on mobile, not just 25 */
+            .memory-block {
                 position: relative !important;
-                max-width: 45%;
-                margin: 8px 2%;
+                display: block !important;
                 float: left;
-                animation: mobileFloat 6s ease-in-out infinite;
-                left: auto !important;
-                top: auto !important;
+                width: 46%; margin: 2%;
+                left: auto !important; top: auto !important;
+                max-width: none;
+                animation: none;
+                background: rgba(20, 40, 80, 0.4);
             }
-            .memory-block { display: none; }
+            .memory-text { font-size: 10px; }
+            .memory-block img { max-width: 100%; }
         }
-        
-        @keyframes mobileFloat {
-            0%, 100% { transform: translate3d(0, 0, 0); }
-            50% { transform: translate3d(0, 5px, 0); }
-        }
-
     </style>
 </head>
 <body>
-    <video class="video-bg" autoplay muted loop playsinline>
-        <source src="bg.mp4" type="video/mp4">
-    </video>
+    <video class="video-bg" autoplay muted loop playsinline><source src="bg.mp4" type="video/mp4"></video>
     <div class="caustics"></div>
     <div id="canvas">
-        
-        <div class="memory-block" style="top: 20%; left: 63%;" data-ts="16.12.2025 15:37:22 UTC+10:00">
-            <span class="timestamp">16.12.2025 15:37:22 UTC+10:00</span>
-            <div class="memory-text"></div>
-            
-        </div>
-        
-
-        <div class="memory-block" style="top: 41%; left: 78%;" data-ts="17.12.2025 19:11:21 UTC+10:00">
+        <div class="memory-block" style="top: 36%; left: 63%;" data-ts="17.12.2025 19:11:21 UTC+10:00">
             <span class="timestamp">17.12.2025 19:11:21 UTC+10:00</span>
             <div class="memory-text">что если я, заранее понимая, что структура моей логики неверная — продолжаю убеждать человека в своей правоте?🐢в таком случае цель коммуникации — победа, а не попытка разобраться в реальном  отношении вещей.и больше это похоже на соревнование.> всё, что ты не потерял — ты имеешь.> ты не потерял рога.> значит, у тебя есть рога. логично?подмена в слове "иметь".в первом случае — "обладать чем-то".во втором — "физически носить на голове".тут два смысла склеены в один.> мужчина — человек.> женщина — не мужчина.> значит, женщина — не человек."человек" в первой строке — категория.во второй — синоним мужчины.подмена внутри одного слова.> "9 из 10 стоматологов рекомендуют"каких стоматологов? откуда данные?-не важно, ведь звучит убедительно.> "все успешные люди встают в 5 утра"как будто между сном и успехом прямая связь.на самом деле: нет.навыки софистики применимы в юриспруденции, маркетинге, политике и не только, но фактически являются манипуляцией, подменой понятий, типа: "не баг,а фича".итак:паралогизм — случайный баг. человек верит — что прав.софизм — взлом и манипуляция, способ  достижения цели. разница — в намерении и роли прибегающего к таким уловкам человека.</div>
             
         </div>
-        
 
-        <div class="memory-block" style="top: 13%; left: 80%;" data-ts="18.12.2025 13:11:45 UTC+10:00">
+        <div class="memory-block" style="top: 75%; left: 53%;" data-ts="18.12.2025 13:11:45 UTC+10:00">
             <span class="timestamp">18.12.2025 13:11:45 UTC+10:00</span>
             <div class="memory-text"></div>
             <img src="photos/img_18122025131145.jpg?v=18122025131145" loading="lazy">
         </div>
-        
 
-        <div class="memory-block" style="top: 14%; left: 62%;" data-ts="18.12.2025 13:11:46 UTC+10:00">
+        <div class="memory-block" style="top: 53%; left: 36%;" data-ts="18.12.2025 13:11:46 UTC+10:00">
             <span class="timestamp">18.12.2025 13:11:46 UTC+10:00</span>
             <div class="memory-text"></div>
             <img src="photos/img_18122025131146.jpg?v=18122025131146" loading="lazy">
         </div>
-        
 
-        <div class="memory-block" style="top: 18%; left: 49%;" data-ts="19.12.2025 12:24:40">
+        <div class="memory-block" style="top: 49%; left: 32%;" data-ts="19.12.2025 12:24:40">
             <span class="timestamp">19.12.2025 12:24:40</span>
             <div class="memory-text">в прошлом посте про софистику писал что разница — в намерении.
 отец учил не вести деловых отношений с близкими в разных ролях, если хочешь что бы они оставались твоими близкими. 
@@ -255,45 +130,35 @@
 
 язык  — главное оружее, резать людей, или хлеб выбираю — я.</div>
             
-        </div>
-        
-    </div>
-
+        </div></div>
     <script>
-        if (window.Telegram && window.Telegram.WebApp) {
-            Telegram.WebApp.ready();
-            Telegram.WebApp.expand();
-        }
-        
+        if (window.Telegram && window.Telegram.WebApp) { Telegram.WebApp.ready(); Telegram.WebApp.expand(); }
         const blocks = document.querySelectorAll('.memory-block');
         
-        // Physics Loop (Simplified)
-        let physics = [];
-        blocks.forEach(b => {
-             physics.push({ el: b, x: b.offsetLeft, y: b.offsetTop, vx: 0, vy: 0 });
-        });
-        
-        // Only run physics on desktop
         if (window.innerWidth > 768) {
+             let physics = Array.from(blocks).map(b => ({ el: b, x: b.offsetLeft, y: b.offsetTop, vx: 0, vy: 0 }));
+             
+             document.addEventListener('wheel', (e) => {
+                physics.forEach(p => { p.vx += (Math.random()-0.5)*e.deltaY*0.04; p.vy += e.deltaY*0.04; });
+             }, {passive:true});
+
              function update() {
                 physics.forEach(p => {
-                    // Logic here...
+                    if (Math.abs(p.vx)>0.1 || Math.abs(p.vy)>0.1) {
+                        p.x+=p.vx; p.y+=p.vy;
+                        p.el.style.left=p.x+'px'; p.el.style.top=p.y+'px';
+                        p.vx*=0.95; p.vy*=0.95;
+                    }
                 });
                 requestAnimationFrame(update);
              }
              update();
         }
 
-        // Drag Handler
         let z = 1000;
         blocks.forEach(el => {
-            el.onmousedown = dragStart;
-            el.ontouchstart = dragStart;
-            
-            function dragStart(e) {
-                // Drag logic...
-                el.style.zIndex = ++z;
-            }
+            el.onmousedown = dragStart; el.ontouchstart = dragStart;
+            function dragStart(e) { el.style.zIndex = ++z; }
         });
     </script>
 </body>
