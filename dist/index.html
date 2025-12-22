@@ -179,22 +179,129 @@
             text-transform: uppercase;
         }
 
-        /* ========== MOBILE OPTIMIZATION - PERFORMANCE FOCUS ========== */
+        /* ========== MOBILE: 20 posts + simple float animation ========== */
         @media (max-width: 768px) {
 
-            /* GPU acceleration */
+            /* Hide all blocks except last 20 */
             .memory-block {
-                max-width: 150px;
-                padding: 6px 8px;
-                background: rgba(20, 40, 80, 0.4);
-                /* GPU acceleration */
+                display: none !important;
+            }
+
+            .memory-block:nth-last-child(-n+20) {
+                display: block !important;
+                position: relative !important;
+                max-width: 45%;
+                margin: 8px 2%;
+                padding: 8px;
+                background: rgba(20, 40, 80, 0.5);
+                border: 1px solid rgba(100, 150, 200, 0.3);
+                float: left;
+                /* Simple float animation - GPU accelerated */
+                animation: mobileFloat 6s ease-in-out infinite;
                 will-change: transform;
-                transform: translate3d(0, 0, 0);
-                /* Disable animation on mobile for performance */
-                animation: none !important;
-                /* No shadows for perf */
-                box-shadow: none;
-                border: 1px solid rgba(100, 150, 200, 0.2);
+                left: auto !important;
+                top: auto !important;
+            }
+
+            /* Stagger animation delays */
+            .memory-block:nth-last-child(1) {
+                animation-delay: 0s;
+            }
+
+            .memory-block:nth-last-child(2) {
+                animation-delay: 0.3s;
+            }
+
+            .memory-block:nth-last-child(3) {
+                animation-delay: 0.6s;
+            }
+
+            .memory-block:nth-last-child(4) {
+                animation-delay: 0.9s;
+            }
+
+            .memory-block:nth-last-child(5) {
+                animation-delay: 1.2s;
+            }
+
+            .memory-block:nth-last-child(6) {
+                animation-delay: 1.5s;
+            }
+
+            .memory-block:nth-last-child(7) {
+                animation-delay: 1.8s;
+            }
+
+            .memory-block:nth-last-child(8) {
+                animation-delay: 2.1s;
+            }
+
+            .memory-block:nth-last-child(9) {
+                animation-delay: 2.4s;
+            }
+
+            .memory-block:nth-last-child(10) {
+                animation-delay: 2.7s;
+            }
+
+            .memory-block:nth-last-child(11) {
+                animation-delay: 0.15s;
+            }
+
+            .memory-block:nth-last-child(12) {
+                animation-delay: 0.45s;
+            }
+
+            .memory-block:nth-last-child(13) {
+                animation-delay: 0.75s;
+            }
+
+            .memory-block:nth-last-child(14) {
+                animation-delay: 1.05s;
+            }
+
+            .memory-block:nth-last-child(15) {
+                animation-delay: 1.35s;
+            }
+
+            .memory-block:nth-last-child(16) {
+                animation-delay: 1.65s;
+            }
+
+            .memory-block:nth-last-child(17) {
+                animation-delay: 1.95s;
+            }
+
+            .memory-block:nth-last-child(18) {
+                animation-delay: 2.25s;
+            }
+
+            .memory-block:nth-last-child(19) {
+                animation-delay: 2.55s;
+            }
+
+            .memory-block:nth-last-child(20) {
+                animation-delay: 2.85s;
+            }
+
+            @keyframes mobileFloat {
+
+                0%,
+                100% {
+                    transform: translate3d(0, 0, 0);
+                }
+
+                25% {
+                    transform: translate3d(5px, -8px, 0);
+                }
+
+                50% {
+                    transform: translate3d(-3px, 5px, 0);
+                }
+
+                75% {
+                    transform: translate3d(4px, 3px, 0);
+                }
             }
 
             .memory-text {
@@ -204,12 +311,12 @@
             }
 
             .memory-block img {
-                max-width: 130px;
-                filter: none;
+                max-width: 100%;
+                height: auto;
             }
 
             .timestamp {
-                font-size: 7px;
+                font-size: 8px;
                 margin-bottom: 4px;
             }
 
@@ -223,30 +330,15 @@
             }
 
             body {
-                /* Prevent iOS scroll bounce */
-                overscroll-behavior: none;
-                touch-action: manipulation;
+                overflow: auto;
+                height: auto;
             }
 
             #canvas {
-                touch-action: pan-x pan-y;
-            }
-        }
-
-        /* Extra small screens (phones) */
-        @media (max-width: 480px) {
-            .memory-block {
-                max-width: 130px;
-                padding: 4px 6px;
-                font-size: 9px;
-            }
-
-            .memory-text {
-                font-size: 9px;
-            }
-
-            .memory-block img {
-                max-width: 110px;
+                display: flex;
+                flex-wrap: wrap;
+                padding: 10px;
+                min-height: 100vh;
             }
         }
     </style>
@@ -263,6 +355,115 @@
     <div class="noise"></div>
 
     <div id="canvas">
+
+        <div class="memory-block" style="top: 84%; left: 35%;" id="mem-91">
+            <span class="timestamp">16.12.2025 15:37:22 UTC+10:00</span>
+            <div class="memory-text">неприятно осознавать бессмысленность того что слышишь, хуже — не понимать причину
+                этой бессмысленности
+                в диалоге с человеком
+                понимаешь — что-то не сходится, а что именно —не ясно.
+                это
+                паралогизм
+                .
+                с грек παραλογισμός — ложный вывод. когда человек искренне верит что прав. но где-то в цепочке
+                рассуждений есть баг.
+                все равно что изменять кривую прямым инструментом, или наоборот.
+                измерение есть, результат мимо.
+                главное - человек делает это не специально, он реально думает что всё логично.
+                возможно, что не хватает знаний, времени или внимания.
+                все мы - периодически так делаем. но замечаем ли это?
+                не делаем ли этого специально?
+                🙃
+                об этом следующий пост.</div>
+
+        </div>
+        <div class="memory-block" style="top: 58%; left: 26%;" id="mem-92">
+            <span class="timestamp">17.12.2025 19:11:21 UTC+10:00</span>
+            <div class="memory-text">что если я, заранее понимая, что структура моей логики неверная — продолжаю
+                убеждать человека в своей правоте?🐢
+                в таком случае цель коммуникации — победа, а не попытка разобраться в реальном отношении вещей.
+                и больше это похоже на соревнование.
+                > всё, что ты не потерял — ты имеешь.
+                > ты не потерял рога.
+                > значит, у тебя есть рога.
+                логично?
+                подмена в слове "иметь".
+                в первом случае — "обладать чем-то".
+                во втором — "физически носить на голове".
+                тут два смысла склеены в один.
+                > мужчина — человек.
+                > женщина — не мужчина.
+                > значит, женщина — не человек.
+                "человек" в первой строке — категория.
+                во второй — синоним мужчины.
+                подмена внутри одного слова.
+                > "9 из 10 стоматологов рекомендуют"
+                каких стоматологов? откуда данные?
+                -не важно, ведь звучит убедительно.
+                > "все успешные люди встают в 5 утра"
+                как будто между сном и успехом прямая связь.
+                на самом деле: нет.
+                навыки софистики применимы в юриспруденции, маркетинге, политике и не только, но фактически являются
+                манипуляцией, подменой понятий, типа: "не баг,а фича".
+                итак:
+                паралогизм — случайный баг. человек верит — что прав.
+                софизм — взлом и манипуляция, способ достижения цели.
+                разница — в намерении и роли прибегающего к таким уловкам человека.</div>
+
+        </div>
+        <div class="memory-block" style="top: 24%; left: 72%;" id="mem-93">
+            <span class="timestamp">18.12.2025 13:11:45 UTC+10:00</span>
+            <div class="memory-text">не надо туда лезть.
+                вы молодые, вам всё легко.
+                это не чикатило и не архивы спецслужб.
+                это другое.
+                серьёзно — любой из вас пожалеет.
+                закройте и забудьте.
+                понимаю, что этим только разогреваю интерес.
+                но пытливым говорю — стоп.
+                остальных просто не найдут.</div>
+            <img src="photos/new_93.jpg" alt="memory" loading="lazy">
+        </div>
+        <div class="memory-block" style="top: 6%; left: 75%;" id="mem-94">
+            <span class="timestamp">18.12.2025 13:11:45 UTC+10:00</span>
+
+            <img src="photos/new_94.jpg" alt="memory" loading="lazy">
+        </div>
+        <div class="memory-block" style="top: 86%; left: 43%;" id="mem-95">
+            <span class="timestamp">18.12.2025 13:11:46 UTC+10:00</span>
+
+            <img src="photos/new_95.jpg" alt="memory" loading="lazy">
+        </div>
+        <div class="memory-block" style="top: 83%; left: 55%;" id="mem-96">
+            <span class="timestamp">18.12.2025 13:11:46 UTC+10:00</span>
+
+            <img src="photos/new_96.jpg" alt="memory" loading="lazy">
+        </div>
+        <div class="memory-block" style="top: 35%; left: 30%;" id="mem-97">
+            <span class="timestamp">18.12.2025 13:11:46 UTC+10:00</span>
+
+            <img src="photos/new_97.jpg" alt="memory" loading="lazy">
+        </div>
+        <div class="memory-block" style="top: 32%; left: 45%;" id="mem-98">
+            <span class="timestamp">18.12.2025 13:11:46 UTC+10:00</span>
+
+            <img src="photos/new_98.jpg" alt="memory" loading="lazy">
+        </div>
+        <div class="memory-block" style="top: 5%; left: 55%;" id="mem-99">
+            <span class="timestamp">18.12.2025 13:11:46 UTC+10:00</span>
+
+            <img src="photos/new_99.jpg" alt="memory" loading="lazy">
+        </div>
+        <div class="memory-block" style="top: 64%; left: 60%;" id="mem-100">
+            <span class="timestamp">18.12.2025 13:11:46 UTC+10:00</span>
+
+            <img src="photos/new_100.jpg" alt="memory" loading="lazy">
+        </div>
+        <div class="memory-block" style="top: 66%; left: 56%;" id="mem-101">
+            <span class="timestamp">18.12.2025 13:11:46 UTC+10:00</span>
+
+            <img src="photos/new_101.jpg" alt="memory" loading="lazy">
+        </div>
 
         <div class="memory-block" style="top: 9%; left: 90%;" id="mem-80">
             <span class="timestamp">16.12.2025 15:37:22 UTC+10:00</span>
@@ -1287,72 +1488,43 @@
         }
 
         // Mobile detection
-        const isMobile = window.innerWidth <= 768 || 'ontouchstart' in window;
+        const isMobile = window.innerWidth <= 768;
 
-        const blocks = document.querySelectorAll('.memory-block');
-        const blocksArray = Array.from(blocks);
-        const physics = new Map();
-        let maxZ = 1000;
-
-        // Initialize blocks
-        blocksArray.forEach((block, i) => {
-            const rect = block.getBoundingClientRect();
-
-            // Disable CSS animation
-            block.style.animation = 'none';
-
-            // Random z-index
-            block.style.zIndex = Math.floor(Math.random() * 500) + 1;
-
-            physics.set(block, {
-                x: rect.left,
-                y: rect.top,
-                vx: 0,
-                vy: 0,
-                isDragging: false
-            });
-        });
-
-        // MOBILE: Simple scrollable layout - make canvas scrollable
+        // MOBILE: Just let CSS handle everything, no JS needed
         if (isMobile) {
-            const canvas = document.getElementById('canvas');
-            document.body.style.overflow = 'auto';
-            document.body.style.height = 'auto';
-            canvas.style.height = 'auto';
-            canvas.style.minHeight = '200vh';
-            canvas.style.position = 'relative';
-
-            // Convert blocks to flow layout on mobile
-            blocksArray.forEach((block, i) => {
-                block.style.position = 'relative';
-                block.style.display = 'inline-block';
-                block.style.margin = '8px';
-                block.style.left = 'auto';
-                block.style.top = 'auto';
-                block.style.verticalAlign = 'top';
-            });
-
-            // Simple tap to bring to front
-            blocksArray.forEach(block => {
-                block.addEventListener('click', () => {
-                    maxZ++;
-                    block.style.zIndex = maxZ;
-                });
-            });
+            console.log('Mobile mode: CSS-only animations');
+            // Don't run any physics or drag code
         }
 
-        // DESKTOP ONLY: Wheel scroll + physics
+        // DESKTOP ONLY: All the fancy physics
         if (!isMobile) {
+            const blocks = document.querySelectorAll('.memory-block');
+            const blocksArray = Array.from(blocks);
+            const physics = new Map();
+            let maxZ = 1000;
+
+            // Initialize blocks
+            blocksArray.forEach((block, i) => {
+                const rect = block.getBoundingClientRect();
+                block.style.animation = 'none';
+                block.style.zIndex = Math.floor(Math.random() * 500) + 1;
+                physics.set(block, {
+                    x: rect.left,
+                    y: rect.top,
+                    vx: 0,
+                    vy: 0,
+                    isDragging: false
+                });
+            });
+
             // Wheel scroll - push blocks + shuffle z-index
             document.addEventListener('wheel', (e) => {
-                const force = e.deltaY * 0.015; // Smoother
+                const force = e.deltaY * 0.015;
                 blocksArray.forEach(block => {
                     const p = physics.get(block);
                     if (!p.isDragging) {
                         p.vx += (Math.random() - 0.5) * Math.abs(force) * 1.5;
                         p.vy += force * (0.4 + Math.random() * 0.4);
-
-                        // Shuffle z-index on scroll
                         block.style.zIndex = Math.floor(Math.random() * 500) + 1;
                     }
                 });
