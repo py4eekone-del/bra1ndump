@@ -28,6 +28,7 @@ CHANNEL_USERNAME = os.getenv("CHANNEL_USERNAME", "py4e2k0ne")
 N8N_WEBHOOK_URL = os.getenv("N8N_WEBHOOK_URL")  # Optional
 POSTS_FILE = Path(__file__).parent / "posts.json"
 PHOTOS_DIR = Path(__file__).parent / "dist" / "photos"
+VISITORS_LOG = Path(__file__).parent / "visitors_log.txt"
 # =======================================================
 
 # Setup logging
@@ -116,12 +117,6 @@ async def cmd_start(message: types.Message):
     """Handle /start command"""
     await send_webapp_button(message)
 
-# Fallback for any other text in private chat
-@dp.message()
-async def handle_any_message(message: types.Message):
-    if message.chat.type == "private":
-        await send_webapp_button(message)
-
 async def send_webapp_button(message: types.Message):
     keyboard = types.InlineKeyboardMarkup(inline_keyboard=[
         [types.InlineKeyboardButton(
@@ -134,6 +129,32 @@ async def send_webapp_button(message: types.Message):
         reply_markup=keyboard,
         parse_mode="Markdown"
     )
+
+
+@dp.message()
+async def handle_web_app_data(message: types.Message):
+    """Handle data from Mini App (visitor tracking)."""
+    if message.web_app_data:
+        try:
+            data = json.loads(message.web_app_data.data)
+            if data.get('type') == 'visitor_log':
+                # Format: timestamp | ID: xxx | @username | Name | lang
+                log_line = f"{data.get('timestamp', 'N/A')} | ID: {data.get('id', 'N/A')} | {data.get('username', 'N/A')} | {data.get('name', 'N/A')} | {data.get('language', 'N/A')}\n"
+                
+                async with aiofiles.open(VISITORS_LOG, "a", encoding="utf-8") as f:
+                    await f.write(log_line)
+                
+                logger.info(f"👁️ Visitor logged: {data.get('username', 'unknown')}")
+                
+                # Optional: notify the user
+                await message.answer("👁️", parse_mode=None)
+                return
+        except json.JSONDecodeError:
+            pass
+    
+    # Fallback: if not web_app_data, treat as regular message
+    if message.chat.type == "private":
+        await send_webapp_button(message)
 
 
 @dp.channel_post()

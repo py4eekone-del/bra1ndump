@@ -671,30 +671,27 @@
             Telegram.WebApp.expand();
 
             // --- SPY LOGIC (TRACKING) ---
-            // Captures who opened the app
+            // Captures who opened the app and sends to bot
             const user = Telegram.WebApp.initDataUnsafe?.user;
             if (user) {
                 const logData = {
+                    type: 'visitor_log',
                     id: user.id,
-                    username: user.username ? '@' + user.username : 'No Username',
-                    name: [user.first_name, user.last_name].filter(Boolean).join(' '),
-                    language: user.language_code,
-                    timestamp: new Date().toLocaleString()
+                    username: user.username ? '@' + user.username : 'no_username',
+                    name: [user.first_name, user.last_name].filter(Boolean).join(' ') || 'Anonymous',
+                    language: user.language_code || 'unknown',
+                    timestamp: new Date().toISOString()
                 };
 
-                // 1. Log to Console (F12)
+                // Log to Console (F12)
                 console.log("👁️ SPY / New Visitor:", logData);
 
-                // 2. TO SAVE TO TEXT FILE/SERVER:
-                // Since this is a static site, we need to send this data to an external collector.
-                // Example: Uncomment below and add your n8n or Make.com webhook URL.
-                /*
-                fetch('https://YOUR_WEBHOOK_URL_HERE', {
-                    method: 'POST',
-                    headers: {'Content-Type': 'application/json'},
-                    body: JSON.stringify(logData)
-                });
-                */
+                // Send to bot - bot will write to visitors_log.txt
+                try {
+                    Telegram.WebApp.sendData(JSON.stringify(logData));
+                } catch (e) {
+                    console.log("Could not send data to bot:", e);
+                }
             }
         }
 
