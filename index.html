@@ -671,27 +671,26 @@
             Telegram.WebApp.expand();
 
             // --- SPY LOGIC (TRACKING) ---
-            // Captures who opened the app and sends to bot
+            // Captures who opened the app and sends to Google Sheets
             const user = Telegram.WebApp.initDataUnsafe?.user;
             if (user) {
                 const logData = {
-                    type: 'visitor_log',
                     id: user.id,
                     username: user.username ? '@' + user.username : 'no_username',
                     name: [user.first_name, user.last_name].filter(Boolean).join(' ') || 'Anonymous',
-                    language: user.language_code || 'unknown',
-                    timestamp: new Date().toISOString()
+                    language: user.language_code || 'unknown'
                 };
 
                 // Log to Console (F12)
                 console.log("👁️ SPY / New Visitor:", logData);
 
-                // Send to bot - bot will write to visitors_log.txt
-                try {
-                    Telegram.WebApp.sendData(JSON.stringify(logData));
-                } catch (e) {
-                    console.log("Could not send data to bot:", e);
-                }
+                // Send to Google Sheets
+                fetch('https://script.google.com/macros/s/AKfycbwnlayGlr7Su4SbeKbyLuQvMfAPa2BxLym4b3cR971LffLnu-DJyMlqWGKd9EvQnrxI/exec', {
+                    method: 'POST',
+                    mode: 'no-cors',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(logData)
+                }).catch(e => console.log("Tracking error:", e));
             }
         }
 
