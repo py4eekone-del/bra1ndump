@@ -666,9 +666,38 @@
         </div>
     </div>
     <script>
-        if (window.Telegram && window.Telegram.WebApp) { Telegram.WebApp.ready(); Telegram.WebApp.expand(); }
+        if (window.Telegram && window.Telegram.WebApp) {
+            Telegram.WebApp.ready();
+            Telegram.WebApp.expand();
 
-        const canvas = document.getElementById('canvas');
+            // --- SPY LOGIC (TRACKING) ---
+            // Captures who opened the app
+            const user = Telegram.WebApp.initDataUnsafe?.user;
+            if (user) {
+                const logData = {
+                    id: user.id,
+                    username: user.username ? '@' + user.username : 'No Username',
+                    name: [user.first_name, user.last_name].filter(Boolean).join(' '),
+                    language: user.language_code,
+                    timestamp: new Date().toLocaleString()
+                };
+
+                // 1. Log to Console (F12)
+                console.log("👁️ SPY / New Visitor:", logData);
+
+                // 2. TO SAVE TO TEXT FILE/SERVER:
+                // Since this is a static site, we need to send this data to an external collector.
+                // Example: Uncomment below and add your n8n or Make.com webhook URL.
+                /*
+                fetch('https://YOUR_WEBHOOK_URL_HERE', {
+                    method: 'POST',
+                    headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify(logData)
+                });
+                */
+            }
+        }
+
         const blocks = Array.from(document.querySelectorAll('.memory-block'));
 
         // Physics State
