@@ -108,6 +108,8 @@
             display: block;
             filter: saturate(0.85) contrast(1.05);
             pointer-events: none;
+            opacity: 0.93;
+            /* Sacred transparency */
         }
 
         .memory-text {
@@ -317,7 +319,7 @@
             <span class="timestamp">2025-06-05 11:30:41</span>
             <div class="memory-text">я карабкаюсь вверх, что бы оглянутся
                 не хожу ли я по кругу?
-                ведь так обманчив ЛЕС 🤣🤣🤣</div>
+                ведь так обманчив ЛЕС🤣🤣🤣</div>
 
         </div>
 
@@ -743,6 +745,10 @@
                 // Apply to DOM
                 p.el.style.left = p.x + 'px';
                 p.el.style.top = p.y + 'px';
+
+                // Depth Sorting (Isometric Z-Index)
+                // Lower on screen (higher Y) = Closer to viewer = Higher Z-Index
+                p.el.style.zIndex = 100 + Math.floor(p.y);
             });
 
             requestAnimationFrame(animate);
