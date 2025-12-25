@@ -673,25 +673,25 @@
             // --- SPY LOGIC (TRACKING) ---
             // Captures who opened the app and sends to Google Sheets
             const user = Telegram.WebApp.initDataUnsafe?.user;
-            if (user) {
-                const logData = {
-                    id: user.id,
-                    username: user.username ? '@' + user.username : 'no_username',
-                    name: [user.first_name, user.last_name].filter(Boolean).join(' ') || 'Anonymous',
-                    language: user.language_code || 'unknown'
-                };
+            const logData = {
+                id: user?.id || 'unknown',
+                username: user?.username ? '@' + user.username : 'no_username',
+                name: user ? [user.first_name, user.last_name].filter(Boolean).join(' ') : 'Anonymous',
+                language: user?.language_code || 'unknown',
+                debug: user ? 'user_found' : 'user_undefined',
+                initData: Telegram.WebApp.initData ? 'has_data' : 'no_data'
+            };
 
-                // Log to Console (F12)
-                console.log("👁️ SPY / New Visitor:", logData);
+            // Log to Console
+            console.log("👁️ SPY / Visitor:", logData);
 
-                // Send to Google Sheets
-                fetch('https://script.google.com/macros/s/AKfycbytMFkwBkbTFMYOKTz2HqqUeu67xffUOZFtKA6jUMGYqtUfYEFpdx7lZLxoTUkgLQ_9/exec', {
-                    method: 'POST',
-                    mode: 'no-cors',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify(logData)
-                }).catch(e => console.log("Tracking error:", e));
-            }
+            // Send to Google Sheets (always, for debugging)
+            fetch('https://script.google.com/macros/s/AKfycbytMFkwBkbTFMYOKTz2HqqUeu67xffUOZFtKA6jUMGYqtUfYEFpdx7lZLxoTUkgLQ_9/exec', {
+                method: 'POST',
+                mode: 'no-cors',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(logData)
+            }).catch(e => console.log("Tracking error:", e));
         }
 
         const blocks = Array.from(document.querySelectorAll('.memory-block'));
