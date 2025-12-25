@@ -1,7 +1,7 @@
-
 <!DOCTYPE html>
 <!-- Force Rebuild 2025-12-25 10:11 -->
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
@@ -9,141 +9,193 @@
     <script src="https://telegram.org/js/telegram-web-app.js"></script>
     <style>
         @import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@300;400;500&display=swap');
-        
-        * { box-sizing: border-box; margin: 0; padding: 0; }
-        
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
         body {
             background: linear-gradient(180deg, #020615 0%, #0a1628 30%, #0d2847 60%, #0a1e3a 100%);
             font-family: 'JetBrains Mono', 'Courier New', monospace;
             overflow: hidden;
-            width: 100vw; height: 100vh; position: relative;
+            width: 100vw;
+            height: 100vh;
+            position: relative;
         }
 
         .video-bg {
-            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
-            object-fit: cover; z-index: 0; opacity: 0.35;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            z-index: 0;
+            opacity: 0.35;
             transform: scaleY(-1);
             filter: saturate(0.7) contrast(1.1) hue-rotate(-10deg);
             pointer-events: none;
         }
 
         .caustics {
-            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
-            pointer-events: none; z-index: 1; opacity: 0.3;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            z-index: 1;
+            opacity: 0.3;
             background: radial-gradient(ellipse 80% 50% at 20% 30%, rgba(255, 180, 100, 0.2) 0%, transparent 50%),
-                        radial-gradient(ellipse 60% 40% at 70% 60%, rgba(255, 200, 150, 0.15) 0%, transparent 45%);
+                radial-gradient(ellipse 60% 40% at 70% 60%, rgba(255, 200, 150, 0.15) 0%, transparent 45%);
             animation: causticDrift 15s ease-in-out infinite alternate;
             mix-blend-mode: screen;
         }
-        
+
         @keyframes causticDrift {
-            0% { transform: translate(0, 0) scale(1); filter: blur(30px); }
-            100% { transform: translate(-2%, 3%) scale(0.98); filter: blur(35px); }
+            0% {
+                transform: translate(0, 0) scale(1);
+                filter: blur(30px);
+            }
+
+            100% {
+                transform: translate(-2%, 3%) scale(0.98);
+                filter: blur(35px);
+            }
         }
 
-        #canvas { position: relative; width: 100%; height: 100%; z-index: 1; overflow-y: auto; overflow-x: hidden; }
+        #canvas {
+            position: relative;
+            width: 100%;
+            height: 100%;
+            z-index: 1;
+            overflow: hidden;
+            touch-action: none;
+        }
 
         .memory-block {
             position: absolute;
             background: rgba(100, 150, 200, 0.05);
             backdrop-filter: blur(4px);
             -webkit-backdrop-filter: blur(4px);
-            border-radius: 2px; padding: 8px 10px;
+            border-radius: 2px;
+            padding: 8px 10px;
             max-width: 240px;
             box-shadow: 0 4px 20px rgba(0, 0, 0, 0.2);
             user-select: none;
-            animation: iceFloat var(--float-duration, 10s) ease-in-out infinite;
-            animation-delay: var(--float-delay, 0s);
-        }
-
-        @keyframes iceFloat {
-            0%, 100% { transform: translate(0, 0) rotate(0deg); }
-            50% { transform: translate(calc(var(--drift-x, 15px) * -0.7), calc(var(--drift-y, -20px) * 0.5)) rotate(-0.3deg); }
+            /* Constant float is now handled by JS physics for collision support, 
+               but we keep a subtle internal wobble via transform */
+            transform-origin: center;
+            will-change: top, left, transform;
         }
 
         .memory-block:hover {
-            z-index: 9999 !important; cursor: grab; animation-play-state: paused;
+            z-index: 9999 !important;
+            cursor: grab;
             box-shadow: 0 0 20px rgba(100, 200, 255, 0.3), 0 8px 32px rgba(0, 0, 0, 0.5);
         }
-        
-        .memory-block.dragging { cursor: grabbing; animation-play-state: paused; transform: scale(1.03) !important; }
 
-        .memory-block img { max-width: 200px; height: auto; display: block; filter: saturate(0.85) contrast(1.05); }
-        .memory-text { font-size: 11px; line-height: 1.5; color: rgba(200, 230, 255, 0.9); }
-        .timestamp { font-size: 9px; color: rgba(150, 180, 220, 0.6); margin-bottom: 6px; display: block; text-transform: uppercase; }
+        .memory-block.dragging {
+            cursor: grabbing;
+            transform: scale(1.03);
+        }
+
+        .memory-block img {
+            max-width: 200px;
+            height: auto;
+            display: block;
+            filter: saturate(0.85) contrast(1.05);
+            pointer-events: none;
+        }
+
+        .memory-text {
+            font-size: 11px;
+            line-height: 1.5;
+            color: rgba(200, 230, 255, 0.9);
+            pointer-events: none;
+        }
+
+        .timestamp {
+            font-size: 9px;
+            color: rgba(150, 180, 220, 0.6);
+            margin-bottom: 6px;
+            display: block;
+            text-transform: uppercase;
+            pointer-events: none;
+        }
 
         @media (max-width: 768px) {
-            .video-bg { opacity: 0.25; }
-            #canvas { display: flex; flex-wrap: wrap; padding: 10px; min-height: 100vh; }
-            
-            /* Show ALL blocks in a grid on mobile */
-            .memory-block {
-                position: relative !important;
-                display: block !important;
-                float: left;
-                width: 46%; margin: 2%;
-                left: auto !important; top: auto !important;
-                max-width: none;
-                animation: none;
-                background: rgba(20, 40, 80, 0.4);
+
+            /* On mobile we might still want the grid, OR we can enable physics if performance allows.
+               Let's keep the user's physics request for Desktop primarily, but simpler for mobile?
+               Actually user requested "physics", let's try to keep it everywhere but safer. */
+            .video-bg {
+                opacity: 0.25;
             }
-            .memory-text { font-size: 10px; }
-            .memory-block img { max-width: 100%; }
         }
     </style>
 </head>
+
 <body>
-    <video class="video-bg" autoplay muted loop playsinline><source src="bg.mp4" type="video/mp4"></video>
+    <video class="video-bg" autoplay muted loop playsinline>
+        <source src="bg.mp4" type="video/mp4">
+    </video>
     <div class="caustics"></div>
     <div id="canvas">
+        <!-- BLOCKS WILL BE PARSED BY JS -->
         <div class="memory-block" style="top: 9%; left: 50%;" data-ts="2025-05-21 11:23:17">
             <span class="timestamp">2025-05-21 11:23:17</span>
             <div class="memory-text">Я — поток в теле.
-вижу, как меняется ум.
-чувствую, как сопротивляется плоть.
+                вижу, как меняется ум.
+                чувствую, как сопротивляется плоть.
 
-Канал — про внимание. 
-Между дыханием и мыслью,
-между болью в теле и тревогой в уме,
-между одиночеством и пустотой. 
+                Канал — про внимание.
+                Между дыханием и мыслью,
+                между болью в теле и тревогой в уме,
+                между одиночеством и пустотой.
 
 
- Пучекон (py4eek0ne)— от ручей(ок) - 0ne - единство. 
-Жаждущий - услышит.</div>
-            
+                Пучекон (py4eek0ne)— от ручей(ок) - 0ne - единство.
+                Жаждущий - услышит.</div>
+
         </div>
 
         <div class="memory-block" style="top: 55%; left: 47%;" data-ts="2025-05-22 12:28:36">
             <span class="timestamp">2025-05-22 12:28:36</span>
-            <div class="memory-text">Кайдзен (改善) — Японская философия, практика, 
-которая фокусируется на непрерывном совершенствовании процессов производства, разработки, вспомогательных бизнес-процессов и управления, а также всех аспектов жизни.
-Работать над собой и своим окружением, делать всё лучше, шаг за шагом.
-Я — поток в малом, ручей - текущий к морю.
-Кайдзен — искусство замечать.
-1 минута дыхания.
-1 взгляд вглубь себя.
-1 маленький выбор
-Кайдзен — не революция.
-Шёпот: «Сделай чуть лучше. Сегодня. Сейчас.»
-Сложи с вниманием одежду.
-Выпей воды, чувствуя вкус.
-Задай себе вопрос: «Что я прячу от себя?»</div>
-            
+            <div class="memory-text">Кайдзен (改善) — Японская философия, практика,
+                которая фокусируется на непрерывном совершенствовании процессов производства, разработки,
+                вспомогательных бизнес-процессов и управления, а также всех аспектов жизни.
+                Работать над собой и своим окружением, делать всё лучше, шаг за шагом.
+                Я — поток в малом, ручей - текущий к морю.
+                Кайдзен — искусство замечать.
+                1 минута дыхания.
+                1 взгляд вглубь себя.
+                1 маленький выбор
+                Кайдзен — не революция.
+                Шёпот: «Сделай чуть лучше. Сегодня. Сейчас.»
+                Сложи с вниманием одежду.
+                Выпей воды, чувствуя вкус.
+                Задай себе вопрос: «Что я прячу от себя?»</div>
+
         </div>
 
         <div class="memory-block" style="top: 42%; left: 9%;" data-ts="2025-05-23 06:24:52">
             <span class="timestamp">2025-05-23 06:24:52</span>
-            <div class="memory-text">Утро — консоль. 
-Жизнь запускается, как новая игра. 
-В первые минуты — твой скилл на кону.
-Просыпаюсь — слышу пение птиц, слежу за их танцем в небе.
-Сначала движение: плечи, спина, приседания, дыхание и пара асан чтобы растянуть корпус, ощутить позвоночник.
-Как будто кручу конфиг: громкость, чувствительность, яркость.
-Если не задать ритм, тогда придется играть на чужих конфигах. 
-Как говорят, «спешка нужна только при ловле блох», а в жизни лучше держать ритм. Спешка рвёт нить внимания, наполняя день суетой вместо ясности. 
-Внимание — мой курсор.
-Стиль - это когда я держу ось.</div>
-            
+            <div class="memory-text">Утро — консоль.
+                Жизнь запускается, как новая игра.
+                В первые минуты — твой скилл на кону.
+                Просыпаюсь — слышу пение птиц, слежу за их танцем в небе.
+                Сначала движение: плечи, спина, приседания, дыхание и пара асан чтобы растянуть корпус, ощутить
+                позвоночник.
+                Как будто кручу конфиг: громкость, чувствительность, яркость.
+                Если не задать ритм, тогда придется играть на чужих конфигах.
+                Как говорят, «спешка нужна только при ловле блох», а в жизни лучше держать ритм. Спешка рвёт нить
+                внимания, наполняя день суетой вместо ясности.
+                Внимание — мой курсор.
+                Стиль - это когда я держу ось.</div>
+
         </div>
 
         <div class="memory-block" style="top: 22%; left: 36%;" data-ts="2025-05-23 11:09:23">
@@ -155,7 +207,7 @@
         <div class="memory-block" style="top: 74%; left: 40%;" data-ts="2025-05-24 17:30:30">
             <span class="timestamp">2025-05-24 17:30:30</span>
             <div class="memory-text">Меньше знаешь - крепче спишь?</div>
-            
+
         </div>
 
         <div class="memory-block" style="top: 37%; left: 17%;" data-ts="2025-05-24 19:22:11">
@@ -232,14 +284,15 @@
 
         <div class="memory-block" style="top: 32%; left: 38%;" data-ts="2025-06-02 12:05:41">
             <span class="timestamp">2025-06-02 12:05:41</span>
-            <div class="memory-text">если оступишься назад, не вини себя, это гинерит избегание по новой. раззаразом</div>
-            
+            <div class="memory-text">если оступишься назад, не вини себя, это гинерит избегание по новой. раззаразом
+            </div>
+
         </div>
 
         <div class="memory-block" style="top: 29%; left: 31%;" data-ts="2025-06-02 12:06:36">
             <span class="timestamp">2025-06-02 12:06:36</span>
             <div class="memory-text">и не бойся НИЧЕГО</div>
-            
+
         </div>
 
         <div class="memory-block" style="top: 73%; left: 15%;" data-ts="2025-06-03 22:10:34">
@@ -263,27 +316,27 @@
         <div class="memory-block" style="top: 75%; left: 20%;" data-ts="2025-06-05 11:30:41">
             <span class="timestamp">2025-06-05 11:30:41</span>
             <div class="memory-text">я карабкаюсь вверх, что бы оглянутся
-не хожу ли я по кругу?
-ведь так обманчив ЛЕС 🤣🤣🤣</div>
-            
+                не хожу ли я по кругу?
+                ведь так обманчив ЛЕС 🤣🤣🤣</div>
+
         </div>
 
         <div class="memory-block" style="top: 68%; left: 34%;" data-ts="2025-06-05 11:36:35">
             <span class="timestamp">2025-06-05 11:36:35</span>
-            <div class="memory-text">и взглянув на это свыше 
-вижу тропу я, иду как можно тише, осмотрительно, с вниманием! 
-а если свет утихнет, путь укажажут звёзды 💫</div>
-            
+            <div class="memory-text">и взглянув на это свыше
+                вижу тропу я, иду как можно тише, осмотрительно, с вниманием!
+                а если свет утихнет, путь укажажут звёзды 💫</div>
+
         </div>
 
         <div class="memory-block" style="top: 60%; left: 75%;" data-ts="2025-06-05 11:47:42">
             <span class="timestamp">2025-06-05 11:47:42</span>
-            <div class="memory-text">тьма тихо прошепчет передохни дружо4ек 
-пустота нутра теплом душевным  согреет 
-масивным кровом дуб укроет мой покой
-от зноя и ветра спасёт упавший кедр 
-свет звёзд над лесом укажет путь —————-домой, оставаясь себе верным!📈📉📈📉📈📉📈📉📈📉</div>
-            
+            <div class="memory-text">тьма тихо прошепчет передохни дружо4ек
+                пустота нутра теплом душевным согреет
+                масивным кровом дуб укроет мой покой
+                от зноя и ветра спасёт упавший кедр
+                свет звёзд над лесом укажет путь —————-домой, оставаясь себе верным!📈📉📈📉📈📉📈📉📈📉</div>
+
         </div>
 
         <div class="memory-block" style="top: 39%; left: 14%;" data-ts="2025-06-07 20:23:37">
@@ -295,7 +348,7 @@
         <div class="memory-block" style="top: 15%; left: 74%;" data-ts="2025-06-09 00:01:06">
             <span class="timestamp">2025-06-09 00:01:06</span>
             <div class="memory-text">0nset41pset</div>
-            
+
         </div>
 
         <div class="memory-block" style="top: 63%; left: 69%;" data-ts="2025-06-11 13:12:29">
@@ -380,40 +433,42 @@
             <span class="timestamp">2025-07-02 08:47:48</span>
             <div class="memory-text">закон тождества - мысль должна быть тождественна самой себе в процессе рассуждения.
 
-то есть А=А и никак иначе
-если я говорю А, то не могу превращать его в Б
+                то есть А=А и никак иначе
+                если я говорю А, то не могу превращать его в Б
 
 
-если в контексте я говорю о школьнике, в последующем ходе диалога называть его студентом - будет нарушением закона.
+                если в контексте я говорю о школьнике, в последующем ходе диалога называть его студентом - будет
+                нарушением закона.
 
-крушение самолета НЕ может называться экстренной посадкой- это нарушение закона
-термическое воздействие в контексте пожара- это нарушение закона
-взрыв - это не хлопок
+                крушение самолета НЕ может называться экстренной посадкой- это нарушение закона
+                термическое воздействие в контексте пожара- это нарушение закона
+                взрыв - это не хлопок
 
 
 
 
-подменяя понятия в рамках событий можно сильно исказить смысл и ход моей мысли
-либо это ошибка в ходе мыслительного процесса, либо стратегия подмены понятий для манипуляции мнением.</div>
-            
+                подменяя понятия в рамках событий можно сильно исказить смысл и ход моей мысли
+                либо это ошибка в ходе мыслительного процесса, либо стратегия подмены понятий для манипуляции мнением.
+            </div>
+
         </div>
 
         <div class="memory-block" style="top: 6%; left: 60%;" data-ts="2025-07-09 07:46:43">
             <span class="timestamp">2025-07-09 07:46:43</span>
             <div class="memory-text">закон исключённого третьего —
-два противоположных суждения не могут быть одновременно ложны.
-одно из них обязательно истинно - третьего не дано
+                два противоположных суждения не могут быть одновременно ложны.
+                одно из них обязательно истинно - третьего не дано
 
-либо А, либо не-А.
-третьего варианта нет — ни «что-то между», ни «оба не подходят»
+                либо А, либо не-А.
+                третьего варианта нет — ни «что-то между», ни «оба не подходят»
 
-«он не жив, но и не мертв» - взаимоисключающие поняти
-если человек жив — он не мёртв.
-если человек мёртв — он не жив.
+                «он не жив, но и не мертв» - взаимоисключающие поняти
+                если человек жив — он не мёртв.
+                если человек мёртв — он не жив.
 
 
-подмена смысла через «третий вариант» — это либо ошибка мышления, либо манипуляция</div>
-            
+                подмена смысла через «третий вариант» — это либо ошибка мышления, либо манипуляция</div>
+
         </div>
 
         <div class="memory-block" style="top: 9%; left: 27%;" data-ts="2025-07-10 12:50:16">
@@ -431,28 +486,28 @@
         <div class="memory-block" style="top: 37%; left: 80%;" data-ts="2025-07-17 12:27:32">
             <span class="timestamp">2025-07-17 12:27:32</span>
             <div class="memory-text">взгляд цепляется, разум 0n
-это вещь с признаками
-признаки - не случайны.
-ведь у всякой вещи можно выделить несколько признаков, которые можно разбить на  категорий
-начинаю примерять:
+                это вещь с признаками
+                признаки - не случайны.
+                ведь у всякой вещи можно выделить несколько признаков, которые можно разбить на категорий
+                начинаю примерять:
 
-что это — печь, дровяная
-сколько — одна
-какая — металлическая, холодная, чуть запылённая
-в отношении к чему — напротив стола, стоит чтобы греть, сейчас не нужна
-где — в центре комнаты
-когда — сейчас, летом 
-как расположена — прямо на полу, устойчиво
-что имеет — дверцу, трубу, зольник
-что делает — сейчас ничего, но предназначена греть
-что с ней делают — растапливают, чистят, иногда
+                что это — печь, дровяная
+                сколько — одна
+                какая — металлическая, холодная, чуть запылённая
+                в отношении к чему — напротив стола, стоит чтобы греть, сейчас не нужна
+                где — в центре комнаты
+                когда — сейчас, летом
+                как расположена — прямо на полу, устойчиво
+                что имеет — дверцу, трубу, зольник
+                что делает — сейчас ничего, но предназначена греть
+                что с ней делают — растапливают, чистят, иногда
 
- смотрят на неё
+                смотрят на неё
 
-сначала смотрю,
-далее вижу структуру,
-категории помогают понимать, что перед тобой и почему оно именно такое</div>
-            
+                сначала смотрю,
+                далее вижу структуру,
+                категории помогают понимать, что перед тобой и почему оно именно такое</div>
+
         </div>
 
         <div class="memory-block" style="top: 9%; left: 65%;" data-ts="2025-07-31 04:27:51">
@@ -511,48 +566,50 @@
 
         <div class="memory-block" style="top: 59%; left: 72%;" data-ts="2025-12-17 19:11:21">
             <span class="timestamp">2025-12-17 19:11:21</span>
-            <div class="memory-text">что если я, заранее понимая, что структура моей логики неверная — продолжаю убеждать человека в своей правоте?🐢
+            <div class="memory-text">что если я, заранее понимая, что структура моей логики неверная — продолжаю
+                убеждать человека в своей правоте?🐢
 
-в таком случае цель коммуникации — победа, а не попытка разобраться в реальном  отношении вещей.
-и больше это похоже на соревнование.
+                в таком случае цель коммуникации — победа, а не попытка разобраться в реальном отношении вещей.
+                и больше это похоже на соревнование.
 
-> всё, что ты не потерял — ты имеешь.
-> ты не потерял рога.
-> значит, у тебя есть рога.
+                > всё, что ты не потерял — ты имеешь.
+                > ты не потерял рога.
+                > значит, у тебя есть рога.
 
- логично?
+                логично?
 
-подмена в слове "иметь".
-в первом случае — "обладать чем-то".
-во втором — "физически носить на голове".
+                подмена в слове "иметь".
+                в первом случае — "обладать чем-то".
+                во втором — "физически носить на голове".
 
-тут два смысла склеены в один.
+                тут два смысла склеены в один.
 
-> мужчина — человек.
-> женщина — не мужчина.
-> значит, женщина — не человек.
+                > мужчина — человек.
+                > женщина — не мужчина.
+                > значит, женщина — не человек.
 
-"человек" в первой строке — категория.
-во второй — синоним мужчины.
-подмена внутри одного слова.
+                "человек" в первой строке — категория.
+                во второй — синоним мужчины.
+                подмена внутри одного слова.
 
-> "9 из 10 стоматологов рекомендуют"
+                > "9 из 10 стоматологов рекомендуют"
 
-каких стоматологов? откуда данные?
--не важно, ведь звучит убедительно.
+                каких стоматологов? откуда данные?
+                -не важно, ведь звучит убедительно.
 
-> "все успешные люди встают в 5 утра"
+                > "все успешные люди встают в 5 утра"
 
-как будто между сном и успехом прямая связь.
-на самом деле: нет.
+                как будто между сном и успехом прямая связь.
+                на самом деле: нет.
 
-навыки софистики применимы в юриспруденции, маркетинге, политике и не только, но фактически являются манипуляцией, подменой понятий, типа: "не баг,а фича".
-итак:
-паралогизм — случайный баг. человек верит — что прав.
-софизм — взлом и манипуляция, способ  достижения цели. 
+                навыки софистики применимы в юриспруденции, маркетинге, политике и не только, но фактически являются
+                манипуляцией, подменой понятий, типа: "не баг,а фича".
+                итак:
+                паралогизм — случайный баг. человек верит — что прав.
+                софизм — взлом и манипуляция, способ достижения цели.
 
-разница — в намерении и роли прибегающего к таким уловкам человека.</div>
-            
+                разница — в намерении и роли прибегающего к таким уловкам человека.</div>
+
         </div>
 
         <div class="memory-block" style="top: 80%; left: 28%;" data-ts="2025-12-18 13:11:45">
@@ -612,50 +669,180 @@
         <div class="memory-block" style="top: 36%; left: 22%;" data-ts="2025-12-19 22:24:40">
             <span class="timestamp">2025-12-19 22:24:40</span>
             <div class="memory-text">в прошлом посте про софистику писал что разница — в намерении.
-отец учил не вести деловых отношений с близкими в разных ролях, если хочешь что бы они оставались твоими близкими. 
-почему? 
+                отец учил не вести деловых отношений с близкими в разных ролях, если хочешь что бы они оставались твоими
+                близкими.
+                почему?
 
-есть места где все знают правила: реклама, суд, переговоры. 
-там можно давить, крутить, выбирать аргументы. потому что другая сторона делает то же самое.
-никто не обманут — все играют.
+                есть места где все знают правила: реклама, суд, переговоры.
+                там можно давить, крутить, выбирать аргументы. потому что другая сторона делает то же самое.
+                никто не обманут — все играют.
 
-другое дело личные человеческие отношения: друг. партнёр. семья. 
-тут человек открыт, он не ждёт что его будут обрабатывать.
-роли путаются, я включаю переговорщика дабы убедить его в том, что удобно ТОЛЬКО мне — а он всё ещё друг. 
-  я в игре — а он вговне. 
+                другое дело личные человеческие отношения: друг. партнёр. семья.
+                тут человек открыт, он не ждёт что его будут обрабатывать.
+                роли путаются, я включаю переговорщика дабы убедить его в том, что удобно ТОЛЬКО мне — а он всё ещё
+                друг.
+                я в игре — а он вговне.
 
-язык  — главное оружее, резать людей, или хлеб выбираю — я.</div>
-            
-        </div></div>
+                язык — главное оружее, резать людей, или хлеб выбираю — я.</div>
+
+        </div>
+    </div>
+
     <script>
         if (window.Telegram && window.Telegram.WebApp) { Telegram.WebApp.ready(); Telegram.WebApp.expand(); }
-        const blocks = document.querySelectorAll('.memory-block');
-        
-        if (window.innerWidth > 768) {
-             let physics = Array.from(blocks).map(b => ({ el: b, x: b.offsetLeft, y: b.offsetTop, vx: 0, vy: 0 }));
-             
-             document.addEventListener('wheel', (e) => {
-                physics.forEach(p => { p.vx += (Math.random()-0.5)*e.deltaY*0.04; p.vy += e.deltaY*0.04; });
-             }, {passive:true});
 
-             function update() {
-                physics.forEach(p => {
-                    if (Math.abs(p.vx)>0.1 || Math.abs(p.vy)>0.1) {
-                        p.x+=p.vx; p.y+=p.vy;
-                        p.el.style.left=p.x+'px'; p.el.style.top=p.y+'px';
-                        p.vx*=0.95; p.vy*=0.95;
-                    }
-                });
-                requestAnimationFrame(update);
-             }
-             update();
+        const canvas = document.getElementById('canvas');
+        const blocks = Array.from(document.querySelectorAll('.memory-block'));
+
+        // Physics State
+        let items = blocks.map(el => {
+            // Random initial velocities for "self floating"
+            const vx = (Math.random() - 0.5) * 0.5;
+            const vy = (Math.random() - 0.5) * 0.5;
+            return {
+                el,
+                x: el.offsetLeft,
+                y: el.offsetTop,
+                vx: vx,
+                vy: vy,
+                w: el.offsetWidth,
+                h: el.offsetHeight,
+                isDragging: false
+            };
+        });
+
+        // Global Loop
+        function animate() {
+            const cw = canvas.clientWidth;
+            const ch = canvas.clientHeight;
+            const friction = 0.98; // Gradual slowdown after pushes
+            const ambientSpeed = 0.02; // Minimum movement to keep them alive
+
+            items.forEach(p => {
+                if (p.isDragging) return;
+
+                // Apply velocity
+                p.x += p.vx;
+                p.y += p.vy;
+
+                // Ambient Brownian motion (makes them float if stopped)
+                p.vx += (Math.random() - 0.5) * 0.05;
+                p.vy += (Math.random() - 0.5) * 0.05;
+
+                // Limit max speed
+                const maxSpeed = 5;
+                p.vx = Math.max(Math.min(p.vx, maxSpeed), -maxSpeed);
+                p.vy = Math.max(Math.min(p.vy, maxSpeed), -maxSpeed);
+
+                // Wall Collisions (Bounce)
+                if (p.x <= 0) { p.x = 0; p.vx *= -1; }
+                if (p.y <= 0) { p.y = 0; p.vy *= -1; }
+                if (p.x + p.w >= cw) { p.x = cw - p.w; p.vx *= -1; }
+                if (p.y + p.h >= ch) { p.y = ch - p.h; p.vy *= -1; }
+
+                // Apply to DOM
+                p.el.style.left = p.x + 'px';
+                p.el.style.top = p.y + 'px';
+            });
+
+            requestAnimationFrame(animate);
+        }
+        animate();
+
+        // --- DRAG & DROP LOGIC ---
+        let activeItem = null;
+        let diffX = 0, diffY = 0;
+        let zIndexCounter = 1000;
+
+        function onPointerDown(e) {
+            const target = e.target.closest('.memory-block');
+            if (!target) return;
+
+            e.preventDefault(); // Prevent text selection/scroll
+            const p = items.find(i => i.el === target);
+            if (!p) return;
+
+            activeItem = p;
+            activeItem.isDragging = true;
+            activeItem.el.classList.add('dragging');
+            activeItem.el.style.zIndex = ++zIndexCounter;
+
+            // Calculate offset of click relative to block top-left
+            const clientX = e.touches ? e.touches[0].clientX : e.clientX;
+            const clientY = e.touches ? e.touches[0].clientY : e.clientY;
+            diffX = clientX - activeItem.x;
+            diffY = clientY - activeItem.y;
+
+            // Stop motion while dragging
+            activeItem.vx = 0;
+            activeItem.vy = 0;
         }
 
-        let z = 1000;
-        blocks.forEach(el => {
-            el.onmousedown = dragStart; el.ontouchstart = dragStart;
-            function dragStart(e) { el.style.zIndex = ++z; }
+        function onPointerMove(e) {
+            if (!activeItem) return;
+            e.preventDefault();
+
+            const clientX = e.touches ? e.touches[0].clientX : e.clientX;
+            const clientY = e.touches ? e.touches[0].clientY : e.clientY;
+
+            // Move
+            activeItem.x = clientX - diffX;
+            activeItem.y = clientY - diffY;
+
+            // Render immediately for responsiveness
+            activeItem.el.style.left = activeItem.x + 'px';
+            activeItem.el.style.top = activeItem.y + 'px';
+        }
+
+        function onPointerUp(e) {
+            if (!activeItem) return;
+
+            // Throw effect? (Optional: calculate simple velocity from last move)
+            // For now just release
+            activeItem.isDragging = false;
+            activeItem.el.classList.remove('dragging');
+            activeItem = null;
+        }
+
+        // Mouse
+        document.addEventListener('mousedown', onPointerDown);
+        document.addEventListener('mousemove', onPointerMove);
+        document.addEventListener('mouseup', onPointerUp);
+
+        // Touch
+        document.addEventListener('touchstart', onPointerDown, { passive: false });
+        document.addEventListener('touchmove', onPointerMove, { passive: false });
+        document.addEventListener('touchend', onPointerUp);
+
+
+        // --- WHEEL SCATTER ---
+        document.addEventListener('wheel', (e) => {
+            // e.deltaY gives direction. 
+            // We want to "stir" or "scatter" them.
+            const force = e.deltaY * 0.05;
+            items.forEach(p => {
+                // Add random vector scaled by wheel force
+                p.vx += (Math.random() - 0.5) * Math.abs(force);
+                p.vy += (Math.random() - 0.5) * Math.abs(force);
+
+                // Add some directional push too
+                p.vy -= force * 0.1;
+            });
+        }, { passive: true });
+
+        // Handle window resize
+        window.addEventListener('resize', () => {
+            // Keep blocks inside
+            const cw = canvas.clientWidth;
+            const ch = canvas.clientHeight;
+            items.forEach(p => {
+                p.w = p.el.offsetWidth;
+                p.h = p.el.offsetHeight;
+                if (p.x + p.w > cw) p.x = cw - p.w;
+                if (p.y + p.h > ch) p.y = ch - p.h;
+            });
         });
     </script>
 </body>
+
 </html>
