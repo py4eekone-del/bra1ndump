@@ -180,15 +180,21 @@
         }
 
         @media (max-width: 768px) {
+
+            /* PERFORMANCE: Hide heavy effects on mobile */
             .video-bg {
-                opacity: 0.2;
+                display: none;
+            }
+
+            .caustics {
+                display: none;
             }
 
             /* PERFORMANCE: Disable backdrop-filter on mobile */
             .memory-block {
                 backdrop-filter: none;
                 -webkit-backdrop-filter: none;
-                background: rgba(20, 40, 80, 0.75);
+                background: rgba(20, 40, 80, 0.85);
             }
 
             .shuffle-btn {
@@ -196,6 +202,9 @@
                 width: 40px;
                 height: 40px;
                 font-size: 18px;
+                backdrop-filter: none;
+                -webkit-backdrop-filter: none;
+                background: rgba(50, 100, 150, 0.8);
             }
         }
     </style>
