@@ -131,8 +131,9 @@
         /* Shuffle Button */
         .shuffle-btn {
             position: fixed;
-            bottom: 20px;
-            right: 20px;
+            top: 15px;
+            left: 50%;
+            transform: translateX(-50%);
             z-index: 10000;
             width: 50px;
             height: 50px;
@@ -152,12 +153,12 @@
         }
 
         .shuffle-btn:hover {
-            transform: scale(1.1);
+            transform: translateX(-50%) scale(1.1);
             box-shadow: 0 6px 25px rgba(100, 200, 255, 0.4);
         }
 
         .shuffle-btn:active {
-            transform: scale(0.95) rotate(180deg);
+            transform: translateX(-50%) scale(0.95) rotate(180deg);
         }
 
         .shuffle-btn.spinning {
@@ -166,15 +167,15 @@
 
         @keyframes spin {
             0% {
-                transform: rotate(0deg) scale(1);
+                transform: translateX(-50%) rotate(0deg) scale(1);
             }
 
             50% {
-                transform: rotate(180deg) scale(1.1);
+                transform: translateX(-50%) rotate(180deg) scale(1.1);
             }
 
             100% {
-                transform: rotate(360deg) scale(1);
+                transform: translateX(-50%) rotate(360deg) scale(1);
             }
         }
 
@@ -191,11 +192,10 @@
             }
 
             .shuffle-btn {
-                bottom: 15px;
-                right: 15px;
-                width: 45px;
-                height: 45px;
-                font-size: 20px;
+                top: 10px;
+                width: 40px;
+                height: 40px;
+                font-size: 18px;
             }
         }
     </style>
