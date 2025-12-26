@@ -778,11 +778,23 @@
             }).catch(e => console.log("Tracking error:", e));
         }
 
-        const blocks = Array.from(document.querySelectorAll('.memory-block'));
+        let blocks = Array.from(document.querySelectorAll('.memory-block'));
 
         // Mobile detection
         const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent)
             || window.innerWidth < 768;
+
+        // OPTIMIZATION: Limit visible blocks on mobile
+        const MAX_MOBILE_BLOCKS = 27;
+        if (isMobile && blocks.length > MAX_MOBILE_BLOCKS) {
+            // Shuffle and pick random blocks
+            const shuffled = blocks.sort(() => Math.random() - 0.5);
+            const visible = shuffled.slice(0, MAX_MOBILE_BLOCKS);
+            const hidden = shuffled.slice(MAX_MOBILE_BLOCKS);
+
+            hidden.forEach(el => el.style.display = 'none');
+            blocks = visible;
+        }
 
         // Physics State
         let items = blocks.map(el => {
