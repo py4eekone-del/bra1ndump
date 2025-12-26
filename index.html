@@ -128,13 +128,74 @@
             pointer-events: none;
         }
 
-        @media (max-width: 768px) {
+        /* Shuffle Button */
+        .shuffle-btn {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            z-index: 10000;
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            background: rgba(100, 150, 200, 0.3);
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
+            border: 1px solid rgba(150, 200, 255, 0.3);
+            color: rgba(200, 230, 255, 0.9);
+            font-size: 24px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: transform 0.3s, box-shadow 0.3s;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
+        }
 
-            /* On mobile we might still want the grid, OR we can enable physics if performance allows.
-               Let's keep the user's physics request for Desktop primarily, but simpler for mobile?
-               Actually user requested "physics", let's try to keep it everywhere but safer. */
+        .shuffle-btn:hover {
+            transform: scale(1.1);
+            box-shadow: 0 6px 25px rgba(100, 200, 255, 0.4);
+        }
+
+        .shuffle-btn:active {
+            transform: scale(0.95) rotate(180deg);
+        }
+
+        .shuffle-btn.spinning {
+            animation: spin 0.5s ease-out;
+        }
+
+        @keyframes spin {
+            0% {
+                transform: rotate(0deg) scale(1);
+            }
+
+            50% {
+                transform: rotate(180deg) scale(1.1);
+            }
+
+            100% {
+                transform: rotate(360deg) scale(1);
+            }
+        }
+
+        @media (max-width: 768px) {
             .video-bg {
-                opacity: 0.25;
+                opacity: 0.2;
+            }
+
+            /* PERFORMANCE: Disable backdrop-filter on mobile */
+            .memory-block {
+                backdrop-filter: none;
+                -webkit-backdrop-filter: none;
+                background: rgba(20, 40, 80, 0.75);
+            }
+
+            .shuffle-btn {
+                bottom: 15px;
+                right: 15px;
+                width: 45px;
+                height: 45px;
+                font-size: 20px;
             }
         }
     </style>
@@ -145,6 +206,8 @@
         <source src="bg.mp4" type="video/mp4" />
     </video>
     <div class="caustics"></div>
+    <!-- Shuffle Button -->
+    <button class="shuffle-btn" id="shuffleBtn" title="Перемешать">🎲</button>
     <div id="canvas">
         <!-- BLOCKS WILL BE PARSED BY JS -->
         <div class="memory-block" data-ts="2025-05-21 11:23:17" style="top: 9%; left: 50%;">
@@ -696,11 +759,15 @@
 
         const blocks = Array.from(document.querySelectorAll('.memory-block'));
 
+        // Mobile detection
+        const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent)
+            || window.innerWidth < 768;
+
         // Physics State
         let items = blocks.map(el => {
-            // Random initial velocities for "self floating"
-            const vx = (Math.random() - 0.5) * 0.5;
-            const vy = (Math.random() - 0.5) * 0.5;
+            // Less movement on mobile
+            const vx = (Math.random() - 0.5) * (isMobile ? 0.2 : 0.5);
+            const vy = (Math.random() - 0.5) * (isMobile ? 0.2 : 0.5);
             return {
                 el,
                 x: el.offsetLeft,
@@ -713,47 +780,89 @@
             };
         });
 
-        // Global Loop
-        function animate() {
+        // --- SHUFFLE FUNCTION ---
+        function shufflePosts() {
             const cw = canvas.clientWidth;
             const ch = canvas.clientHeight;
-            const friction = 0.98; // Gradual slowdown after pushes
-            const ambientSpeed = 0.02; // Minimum movement to keep them alive
+
+            items.forEach(p => {
+                // Random new position
+                p.x = Math.random() * (cw - p.w);
+                p.y = Math.random() * (ch - p.h);
+                // Random velocity burst
+                p.vx = (Math.random() - 0.5) * 8;
+                p.vy = (Math.random() - 0.5) * 8;
+            });
+        }
+
+        // Shuffle button handler
+        const shuffleBtn = document.getElementById('shuffleBtn');
+        if (shuffleBtn) {
+            shuffleBtn.addEventListener('click', () => {
+                shuffleBtn.classList.add('spinning');
+                shufflePosts();
+                setTimeout(() => {
+                    shuffleBtn.classList.remove('spinning');
+                }, 500);
+            });
+        }
+
+        // Performance: throttle for mobile
+        let lastFrame = 0;
+        const targetFPS = isMobile ? 30 : 60;
+        const frameDuration = 1000 / targetFPS;
+
+        // Global Loop
+        function animate(timestamp) {
+            // Throttle on mobile
+            if (timestamp - lastFrame < frameDuration) {
+                requestAnimationFrame(animate);
+                return;
+            }
+            lastFrame = timestamp;
+
+            const cw = canvas.clientWidth;
+            const ch = canvas.clientHeight;
+
+            // Much less ambient motion on mobile
+            const ambientFactor = isMobile ? 0.008 : 0.05;
+            const friction = 0.97;
+            const maxSpeed = isMobile ? 3 : 5;
 
             items.forEach(p => {
                 if (p.isDragging) return;
 
-                // Apply velocity
+                // Apply velocity with friction
+                p.vx *= friction;
+                p.vy *= friction;
                 p.x += p.vx;
                 p.y += p.vy;
 
-                // Ambient Brownian motion (makes them float if stopped)
-                p.vx += (Math.random() - 0.5) * 0.05;
-                p.vy += (Math.random() - 0.5) * 0.05;
+                // Ambient Brownian motion (much gentler on mobile)
+                p.vx += (Math.random() - 0.5) * ambientFactor;
+                p.vy += (Math.random() - 0.5) * ambientFactor;
 
                 // Limit max speed
-                const maxSpeed = 5;
                 p.vx = Math.max(Math.min(p.vx, maxSpeed), -maxSpeed);
                 p.vy = Math.max(Math.min(p.vy, maxSpeed), -maxSpeed);
 
                 // Wall Collisions (Bounce)
-                if (p.x <= 0) { p.x = 0; p.vx *= -1; }
-                if (p.y <= 0) { p.y = 0; p.vy *= -1; }
-                if (p.x + p.w >= cw) { p.x = cw - p.w; p.vx *= -1; }
-                if (p.y + p.h >= ch) { p.y = ch - p.h; p.vy *= -1; }
+                if (p.x <= 0) { p.x = 0; p.vx *= -0.7; }
+                if (p.y <= 0) { p.y = 0; p.vy *= -0.7; }
+                if (p.x + p.w >= cw) { p.x = cw - p.w; p.vx *= -0.7; }
+                if (p.y + p.h >= ch) { p.y = ch - p.h; p.vy *= -0.7; }
 
                 // Apply to DOM
                 p.el.style.left = p.x + 'px';
                 p.el.style.top = p.y + 'px';
 
-                // Depth Sorting (Isometric Z-Index)
-                // Lower on screen (higher Y) = Closer to viewer = Higher Z-Index
+                // Depth Sorting
                 p.el.style.zIndex = 100 + Math.floor(p.y);
             });
 
             requestAnimationFrame(animate);
         }
-        animate();
+        requestAnimationFrame(animate);
 
         // --- DRAG & DROP LOGIC ---
         let activeItem = null;
